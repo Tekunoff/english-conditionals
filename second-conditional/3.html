@@ -84,7 +84,8 @@
 <div class="finish" id="finish">
   <h2>🎉 Готово!</h2>
   <p id="final-score"></p>
-  <button onclick="restart()">Начать снова</button>
+  <button onclick="restart()">Продолжить</button>
+  <button onclick="resetProgress()" style="background:#1e1e2a;color:#777;border:1.5px solid #2e2e44;margin-top:4px;">Сначала</button>
 </div>
 <div class="modal-overlay" id="modal">
   <div class="modal">
@@ -319,9 +320,27 @@ const sentences = [
   {words:["If","he","had","maintained","the","connections,","he","would","have","more","options","open","to","him","now"],ru:"Если бы он поддерживал связи, сейчас у него было бы больше возможностей"}
 ];
 
+sentences.forEach((s, i) => s._id = i);
+const STORAGE_KEY = 'cond3';
+
 let queue = [], current = null, answer = [], correct = 0, total = 0;
 let checked = false, shuffledWords = [];
+let done = new Set();
 
+function loadProgress() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) done = new Set(JSON.parse(saved));
+  } catch(e) { done = new Set(); }
+}
+function saveProgress() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...done]));
+}
+function resetProgress() {
+  done = new Set();
+  localStorage.removeItem(STORAGE_KEY);
+  restart();
+}
 function strip(w) { return w.replace(/,+$/, ''); }
 function display(w) {
   const s = strip(w);
@@ -336,7 +355,16 @@ function shuffle(arr) {
   return a;
 }
 function restart() {
-  queue = shuffle(sentences);
+  const remaining = sentences.filter(s => !done.has(s._id));
+  if (remaining.length === 0) {
+    document.getElementById('game').style.display = 'none';
+    const f = document.getElementById('finish');
+    f.classList.add('show');
+    document.getElementById('final-score').innerHTML = `🏆 Все <strong style="color:#4caf82">${sentences.length}</strong> предложений изучены!`;
+    document.getElementById('progress-bar').style.width = '100%';
+    return;
+  }
+  queue = shuffle(remaining);
   correct = 0; total = 0;
   document.getElementById('finish').classList.remove('show');
   document.getElementById('game').style.display = '';
@@ -405,7 +433,7 @@ function check() {
   const userSentence = answer.map(a => strip(a.w)).join(' ');
   const correctSentence = current.words.map(strip).join(' ');
   const isCorrect = userSentence === correctSentence;
-  if (isCorrect) correct++;
+  if (isCorrect) { correct++; done.add(current._id); saveProgress(); }
   const sa = document.getElementById('sentence-area');
   sa.classList.add(isCorrect ? 'correct' : 'wrong');
   const fb = document.getElementById('feedback');
@@ -425,10 +453,11 @@ function skip() {
   const btn = document.getElementById('btn-check');
   btn.textContent = 'Next →'; btn.onclick = nextQuestion;
 }
-function updateScore() { document.getElementById('score').textContent = `${correct} / ${total}`; }
+function updateScore() {
+  document.getElementById('score').textContent = `${correct} / ${total}  •  ✓ ${done.size}`;
+}
 function updateProgress() {
-  const done = sentences.length - queue.length - 1;
-  const pct = Math.max(0, (done / sentences.length) * 100);
+  const pct = (done.size / sentences.length) * 100;
   document.getElementById('progress-bar').style.width = pct + '%';
 }
 function showRule() { document.getElementById('modal').classList.add('show'); }
@@ -437,9 +466,11 @@ function showFinish() {
   document.getElementById('game').style.display = 'none';
   const f = document.getElementById('finish');
   f.classList.add('show');
-  document.getElementById('final-score').innerHTML = `You got <strong style="color:#7b68ee">${correct}</strong> out of <strong>${total}</strong> correct.`;
-  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('final-score').innerHTML =
+    `Сессия: <strong style="color:#7b68ee">${correct}</strong> / ${total} правильно.<br>Изучено всего: <strong style="color:#4caf82">${done.size}</strong> / ${sentences.length}`;
+  document.getElementById('progress-bar').style.width = (done.size / sentences.length * 100) + '%';
 }
+loadProgress();
 restart();
 </script>
 </body>
