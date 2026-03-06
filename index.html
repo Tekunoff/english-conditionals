@@ -94,26 +94,31 @@
 
   <script>
     const totals = { cond0: 200, cond1: 200, cond2: 200, cond3: 200 };
-    [0, 1, 2, 3].forEach(n => {
-      const key = 'cond' + n;
-      const total = totals[key];
-      let done = 0;
-      try {
-        const saved = localStorage.getItem(key);
-        if (saved) done = JSON.parse(saved).length;
-      } catch(e) {}
-      const pct = total > 0 ? (done / total * 100) : 0;
-      const bar = document.getElementById('pb' + n);
-      const cc  = document.getElementById('cc' + n);
-      bar.style.width = pct + '%';
-      if (done === total) bar.classList.add('done');
-      if (done === 0) {
-        cc.textContent = total + ' предложений';
-      } else if (done === total) {
-        cc.innerHTML = `<span>✓ Все ${total} изучены!</span>`;
-      } else {
-        cc.innerHTML = `<span>${done}</span> / ${total} изучено &nbsp;·&nbsp; осталось ${total - done}`;
-      }
-    });
+    function renderProgress() {
+      [0, 1, 2, 3].forEach(n => {
+        const key = 'cond' + n;
+        const total = totals[key];
+        let done = 0;
+        try {
+          const saved = localStorage.getItem(key);
+          if (saved) done = JSON.parse(saved).length;
+        } catch(e) {}
+        const pct = total > 0 ? (done / total * 100) : 0;
+        const bar = document.getElementById('pb' + n);
+        const cc  = document.getElementById('cc' + n);
+        bar.style.width = pct + '%';
+        bar.classList.toggle('done', done === total);
+        if (done === 0) {
+          cc.textContent = total + ' предложений';
+        } else if (done === total) {
+          cc.innerHTML = `<span>✓ Все ${total} изучены!</span>`;
+        } else {
+          cc.innerHTML = `<span>${done}</span> / ${total} изучено &nbsp;·&nbsp; осталось ${total - done}`;
+        }
+      });
+    }
+    renderProgress();
+    // Перерисовываем при возврате из bfcache (кнопка «Назад» на мобильном)
+    window.addEventListener('pageshow', renderProgress);
   </script>
 </body>
