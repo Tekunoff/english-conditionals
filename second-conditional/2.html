@@ -261,6 +261,9 @@
     .finish h2 { font-size: 28px; color: #7b68ee; }
     .finish p  { font-size: 16px; color: #888; line-height: 1.6; }
     .finish button { max-width: 220px; background: #7b68ee; color: #fff; }
+    .save-row { display:flex; gap:10px; width:100%; max-width:480px; margin-top:6px; justify-content:flex-end; }
+    .btn-save { background:none; border:1.5px solid #3d3d5c; color:#9d9dff; border-radius:20px; padding:6px 14px; font-size:13px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    #import-file { display:none; }
   </style>
 </head>
 <body>
@@ -274,6 +277,11 @@
 
 <div class="progress-bar-wrap">
   <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+</div>
+<div class="save-row">
+  <button class="btn-save" onclick="exportProgress()">💾 Сохранить</button>
+  <button class="btn-save" onclick="document.getElementById('import-file').click()">📂 Загрузить</button>
+  <input type="file" id="import-file" accept=".json" onchange="importProgress(event)">
 </div>
 
 <div id="game">
@@ -543,8 +551,49 @@ const sentences = [
   {words:["Were","he","in","charge,","the","project","would","run","more","smoothly"],ru:"Будь он ответственным, проект шёл бы глаже"}
 ];
 
+sentences.forEach((s, i) => s._id = i);
+const STORAGE_KEY = 'cond2';
+
 let queue = [], current = null, answer = [], correct = 0, total = 0;
 let checked = false, shuffledWords = [];
+let done = new Set();
+
+function loadProgress() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) done = new Set(JSON.parse(saved));
+  } catch(e) { done = new Set(); }
+}
+function saveProgress() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...done]));
+}
+function resetProgress() {
+  done = new Set();
+  localStorage.removeItem(STORAGE_KEY);
+  restart();
+}
+function exportProgress() {
+  const data = JSON.stringify({key: STORAGE_KEY, done: [...done], total: sentences.length});
+  const a = document.createElement('a');
+  a.href = 'data:application/json,' + encodeURIComponent(data);
+  a.download = STORAGE_KEY + '-progress.json';
+  a.click();
+}
+function importProgress(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.key !== STORAGE_KEY) { alert('Этот файл от другого уровня!'); return; }
+      done = new Set(data.done);
+      saveProgress();
+      restart();
+    } catch(err) { alert('Не удалось загрузить файл.'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
 
 function strip(w) { return w.replace(/,+$/, ''); }
 function display(w) {
@@ -562,13 +611,160 @@ function shuffle(arr) {
 }
 
 function restart() {
-  queue = shuffle(sentences);
+  const remaining = sentences.filter(s => !done.has(s._id));
+  if (remaining.length === 0) {
+    document.getElementById('game').style.display = 'none';
+    const f = document.getElementById('finish');
+    f.classList.add('show');
+    document.getElementById('final-score').innerHTML = `🏆 Все <strong style="color:#4caf82">${sentences.length}</strong> предложений изучены!`;
+    document.getElementById('progress-bar').style.width = '100%';
+    return;
+  }
+  queue = shuffle(remaining);
   correct = 0; total = 0;
   document.getElementById('finish').classList.remove('show');
   document.getElementById('game').style.display = '';
   updateScore();
   nextQuestion();
 }
+
+function nextQuestion() {
+  if (queue.length === 0) { showFinish(); return; }
+  current = queue.shift();
+  answer = [];
+  checked = false;
+
+  const sa = document.getElementById('sentence-area');
+  sa.className = 'sentence-area';
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('btn-check').textContent = 'Check ✓';
+  document.getElementById('btn-check').onclick = check;
+  document.getElementById('task-ru').textContent = current.ru;
+
+  shuffledWords = shuffle(current.words.map((w, i) => ({ w, id: i })));
+  renderBank(shuffledWords);
+  renderAnswer();
+  updateProgress();
+}
+
+function renderBank(items) {
+  const bank = document.getElementById('word-bank');
+  bank.innerHTML = '';
+  items.forEach(item => {
+    if (answer.find(a => a.id === item.id)) return;
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = display(item.w);
+    chip.dataset.id = item.id;
+    chip.onclick = () => pickWord(item);
+    bank.appendChild(chip);
+  });
+}
+
+function renderAnswer() {
+  const sa = document.getElementById('sentence-area');
+  const ph = document.getElementById('placeholder');
+  sa.querySelectorAll('.chip').forEach(c => c.remove());
+
+  if (answer.length === 0) {
+    ph.style.display = '';
+  } else {
+    ph.style.display = 'none';
+    answer.forEach(item => {
+      const chip = document.createElement('div');
+      chip.className = 'chip in-answer';
+      chip.textContent = display(item.w);
+      chip.dataset.id = item.id;
+      chip.onclick = () => removeWord(item);
+      sa.appendChild(chip);
+    });
+  }
+}
+
+function pickWord(item) {
+  if (checked) return;
+  answer.push(item);
+  renderAnswer();
+  renderBank(shuffledWords);
+}
+
+function removeWord(item) {
+  if (checked) return;
+  answer = answer.filter(a => a.id !== item.id);
+  renderAnswer();
+  renderBank(shuffledWords);
+}
+
+function check() {
+  if (answer.length === 0) return;
+  checked = true;
+  total++;
+  const userSentence = answer.map(a => strip(a.w)).join(' ');
+  const correctSentence = current.words.map(strip).join(' ');
+  const isCorrect = userSentence === correctSentence;
+  if (isCorrect) { correct++; done.add(current._id); saveProgress(); }
+
+  const sa = document.getElementById('sentence-area');
+  sa.classList.add(isCorrect ? 'correct' : 'wrong');
+
+  const fb = document.getElementById('feedback');
+  if (isCorrect) {
+    fb.innerHTML = `<div class="correct-label">✓ Correct!</div>`;
+  } else {
+    fb.innerHTML = `<div class="wrong-label">✗ Not quite</div><div class="answer">${current.words.map(strip).join(' ')}</div>`;
+  }
+
+  updateScore();
+  const btn = document.getElementById('btn-check');
+  btn.textContent = 'Next →';
+  btn.onclick = nextQuestion;
+}
+
+function skip() {
+  if (checked) { nextQuestion(); return; }
+  total++;
+  checked = true;
+  const sa = document.getElementById('sentence-area');
+  sa.classList.add('wrong');
+  const fb = document.getElementById('feedback');
+  fb.innerHTML = `<div class="wrong-label">Skipped</div><div class="answer">${current.words.map(strip).join(' ')}</div>`;
+  updateScore();
+  const btn = document.getElementById('btn-check');
+  btn.textContent = 'Next →';
+  btn.onclick = nextQuestion;
+}
+
+function updateScore() {
+  document.getElementById('score').textContent = `${correct} / ${total}  •  ✓ ${done.size}`;
+}
+
+function updateProgress() {
+  const pct = (done.size / sentences.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function showRule() {
+  document.getElementById('modal').classList.add('show');
+}
+
+function hideRule() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+function showFinish() {
+  document.getElementById('game').style.display = 'none';
+  const f = document.getElementById('finish');
+  f.classList.add('show');
+  document.getElementById('final-score').innerHTML =
+    `Сессия: <strong style="color:#7b68ee">${correct}</strong> / ${total} правильно.<br>Изучено всего: <strong style="color:#4caf82">${done.size}</strong> / ${sentences.length}`;
+  document.getElementById('progress-bar').style.width = (done.size / sentences.length * 100) + '%';
+}
+
+loadProgress();
+restart();
+</script>
+</body>
+</html>
 
 function nextQuestion() {
   if (queue.length === 0) { showFinish(); return; }

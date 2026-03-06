@@ -54,6 +54,9 @@
     .finish h2 { font-size: 28px; color: #7b68ee; }
     .finish p  { font-size: 16px; color: #888; line-height: 1.6; }
     .finish button { max-width: 220px; background: #7b68ee; color: #fff; }
+    .save-row { display:flex; gap:10px; width:100%; max-width:480px; margin-top:6px; justify-content:flex-end; }
+    .btn-save { background:none; border:1.5px solid #3d3d5c; color:#9d9dff; border-radius:20px; padding:6px 14px; font-size:13px; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+    #import-file { display:none; }
   </style>
 </head>
 <body>
@@ -64,6 +67,11 @@
 </div>
 <div class="progress-bar-wrap">
   <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+</div>
+<div class="save-row">
+  <button class="btn-save" onclick="exportProgress()">💾 Сохранить</button>
+  <button class="btn-save" onclick="document.getElementById('import-file').click()">📂 Загрузить</button>
+  <input type="file" id="import-file" accept=".json" onchange="importProgress(event)">
 </div>
 <div id="game">
   <div class="task-card">
@@ -337,6 +345,28 @@ function resetProgress() {
   done = new Set();
   localStorage.removeItem(STORAGE_KEY);
   restart();
+}
+function exportProgress() {
+  const data = JSON.stringify({key: STORAGE_KEY, done: [...done], total: sentences.length});
+  const a = document.createElement('a');
+  a.href = 'data:application/json,' + encodeURIComponent(data);
+  a.download = STORAGE_KEY + '-progress.json';
+  a.click();
+}
+function importProgress(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.key !== STORAGE_KEY) { alert('Этот файл от другого уровня!'); return; }
+      done = new Set(data.done);
+      saveProgress();
+      restart();
+    } catch(err) { alert('Не удалось загрузить файл.'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
 }
 function strip(w) { return w.replace(/,+$/, ''); }
 function display(w) {

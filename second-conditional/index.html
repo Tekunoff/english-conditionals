@@ -22,7 +22,11 @@
     .card-title { font-size: 18px; font-weight: 600; color: #e0e0ff; }
     .card-formula { font-size: 12px; color: #7b68ee; margin-top: 2px; font-family: "SF Mono", "Menlo", monospace; }
     .card-desc { font-size: 13px; color: #666; line-height: 1.5; margin-left: 56px; }
-    .card-count { font-size: 11px; color: #444; margin-top: 10px; margin-left: 56px; }
+    .card-progress-wrap { margin: 10px 0 4px 56px; margin-right: 36px; background: #0f0f20; border-radius: 4px; height: 4px; }
+    .card-progress-bar { height: 4px; border-radius: 4px; background: #7b68ee; transition: width 0.4s; }
+    .card-progress-bar.done { background: #4caf82; }
+    .card-count { font-size: 11px; color: #555; margin-left: 56px; }
+    .card-count span { color: #4caf82; font-weight: 600; }
     .arrow { position: absolute; right: 22px; top: 50%; transform: translateY(-50%); font-size: 22px; color: #3d3d5c; }
   </style>
 </head>
@@ -40,7 +44,8 @@
         </div>
       </div>
       <div class="card-desc">Общие истины и научные факты. То, что всегда верно.</div>
-      <div class="card-count">100 предложений</div>
+      <div class="card-progress-wrap"><div class="card-progress-bar" id="pb0" style="width:0%"></div></div>
+      <div class="card-count" id="cc0">200 предложений</div>
       <span class="arrow">›</span>
     </a>
 
@@ -53,7 +58,8 @@
         </div>
       </div>
       <div class="card-desc">Реальные и вероятные ситуации в будущем.</div>
-      <div class="card-count">100 предложений</div>
+      <div class="card-progress-wrap"><div class="card-progress-bar" id="pb1" style="width:0%"></div></div>
+      <div class="card-count" id="cc1">200 предложений</div>
       <span class="arrow">›</span>
     </a>
 
@@ -66,7 +72,8 @@
         </div>
       </div>
       <div class="card-desc">Гипотетические ситуации в настоящем или будущем.</div>
-      <div class="card-count">100 предложений</div>
+      <div class="card-progress-wrap"><div class="card-progress-bar" id="pb2" style="width:0%"></div></div>
+      <div class="card-count" id="cc2">200 предложений</div>
       <span class="arrow">›</span>
     </a>
 
@@ -79,8 +86,34 @@
         </div>
       </div>
       <div class="card-desc">Нереальные ситуации в прошлом. То, чего не произошло.</div>
-      <div class="card-count">100 предложений</div>
+      <div class="card-progress-wrap"><div class="card-progress-bar" id="pb3" style="width:0%"></div></div>
+      <div class="card-count" id="cc3">200 предложений</div>
       <span class="arrow">›</span>
     </a>
   </div>
+
+  <script>
+    const totals = { cond0: 200, cond1: 200, cond2: 200, cond3: 200 };
+    [0, 1, 2, 3].forEach(n => {
+      const key = 'cond' + n;
+      const total = totals[key];
+      let done = 0;
+      try {
+        const saved = localStorage.getItem(key);
+        if (saved) done = JSON.parse(saved).length;
+      } catch(e) {}
+      const pct = total > 0 ? (done / total * 100) : 0;
+      const bar = document.getElementById('pb' + n);
+      const cc  = document.getElementById('cc' + n);
+      bar.style.width = pct + '%';
+      if (done === total) bar.classList.add('done');
+      if (done === 0) {
+        cc.textContent = total + ' предложений';
+      } else if (done === total) {
+        cc.innerHTML = `<span>✓ Все ${total} изучены!</span>`;
+      } else {
+        cc.innerHTML = `<span>${done}</span> / ${total} изучено &nbsp;·&nbsp; осталось ${total - done}`;
+      }
+    });
+  </script>
 </body>
