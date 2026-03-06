@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Third Conditional</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f14; color: #f0f0f0;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 14px 16px 40px;
+    }
+    .top-bar { width: 100%; max-width: 480px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .top-bar h1 { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 1.5px; }
+    .btn-rule { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .progress-bar-wrap { width: 100%; max-width: 480px; background: #1e1e2a; border-radius: 6px; height: 5px; margin-bottom: 18px; }
+    .progress-bar { height: 5px; background: #7b68ee; border-radius: 6px; transition: width 0.4s ease; }
+    .task-card { width: 100%; max-width: 480px; background: #1a1a2e; border: 1.5px solid #2e2e50; border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+    .task-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .task-ru { font-size: 18px; color: #e0e0ff; line-height: 1.5; font-weight: 500; }
+    .sentence-area { width: 100%; max-width: 480px; min-height: 64px; background: #1a1a24; border: 2px solid #2e2e44; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; transition: border-color 0.3s; }
+    .sentence-area.correct { border-color: #4caf82; }
+    .sentence-area.wrong   { border-color: #e05c5c; }
+    .placeholder { color: #444; font-size: 14px; font-style: italic; }
+    .chip { background: #2a2a3e; border: 1.5px solid #3d3d5c; color: #d0d0f0; border-radius: 20px; padding: 8px 13px; font-size: 15px; cursor: pointer; user-select: none; transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .chip:active { transform: scale(0.95); }
+    .chip.in-answer { background: #35355a; border-color: #7b68ee; color: #c8c8ff; }
+    .bank-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; align-self: flex-start; max-width: 480px; width: 100%; }
+    .word-bank { width: 100%; max-width: 480px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; min-height: 44px; }
+    .btn-row { display: flex; gap: 12px; width: 100%; max-width: 480px; }
+    button { flex: 1; padding: 15px; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    button:active { transform: scale(0.97); }
+    #btn-check { background: #7b68ee; color: #fff; }
+    #btn-skip { background: #1e1e2a; color: #777; border: 1.5px solid #2e2e44; flex: 0 0 auto; padding: 15px 18px; }
+    .feedback { margin-top: 14px; width: 100%; max-width: 480px; font-size: 14px; line-height: 1.6; min-height: 44px; }
+    .feedback .correct-label { color: #4caf82; font-weight: 700; }
+    .feedback .wrong-label   { color: #e05c5c; font-weight: 700; }
+    .feedback .answer        { color: #9d9dff; margin-top: 4px; }
+    .score { position: fixed; top: 14px; right: 18px; font-size: 13px; color: #666; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #1a1a2e; border: 1.5px solid #3d3d5c; border-radius: 18px; padding: 24px 22px; max-width: 460px; width: 100%; max-height: 85vh; overflow-y: auto; }
+    .modal h2 { font-size: 18px; color: #9d9dff; margin-bottom: 16px; }
+    .modal .formula-block { background: #0f0f20; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; font-size: 15px; color: #c8c8ff; line-height: 1.8; }
+    .modal .formula-block em { color: #7b68ee; font-style: normal; font-weight: 600; }
+    .modal p { font-size: 14px; color: #aaa; line-height: 1.7; margin-bottom: 10px; }
+    .modal .example { background: #12122a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; color: #d0d0f0; line-height: 1.6; }
+    .modal .example span { display: block; color: #777; font-size: 13px; margin-top: 2px; font-style: italic; }
+    .modal-close { margin-top: 20px; width: 100%; background: #7b68ee; color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+    .finish { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-top: 40px; }
+    .finish.show { display: flex; }
+    .finish h2 { font-size: 28px; color: #7b68ee; }
+    .finish p  { font-size: 16px; color: #888; line-height: 1.6; }
+    .finish button { max-width: 220px; background: #7b68ee; color: #fff; }
+  </style>
+</head>
+<body>
+<div class="score" id="score">0 / 0</div>
+<div class="top-bar">
+  <h1>Third Conditional</h1>
+  <button class="btn-rule" onclick="showRule()">📖 Правило</button>
+</div>
+<div class="progress-bar-wrap">
+  <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+</div>
+<div id="game">
+  <div class="task-card">
+    <div class="task-label">Переведи на английский</div>
+    <div class="task-ru" id="task-ru">...</div>
+  </div>
+  <div class="sentence-area" id="sentence-area">
+    <span class="placeholder" id="placeholder">Tap words to build the sentence</span>
+  </div>
+  <div class="bank-label">Слова</div>
+  <div class="word-bank" id="word-bank"></div>
+  <div class="btn-row">
+    <button id="btn-skip" onclick="skip()">Skip</button>
+    <button id="btn-check" onclick="check()">Check ✓</button>
+  </div>
+  <div class="feedback" id="feedback"></div>
+</div>
+<div class="finish" id="finish">
+  <h2>🎉 Готово!</h2>
+  <p id="final-score"></p>
+  <button onclick="restart()">Начать снова</button>
+</div>
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Third Conditional — Правило</h2>
+    <div class="formula-block">
+      <em>If</em> + subject + <em>had</em> + <em>past participle</em>, subject + <em>would have</em> + <em>past participle</em>
+    </div>
+    <p>Используется для <strong style="color:#c8c8ff">нереальных ситуаций в прошлом</strong> — то, чего не произошло, но могло бы при других обстоятельствах.</p>
+    <div class="example">
+      If I <em style="color:#9d9dff">had studied</em> harder, I <em style="color:#9d9dff">would have passed</em> the exam.
+      <span>Если бы я учился усерднее, я бы сдал экзамен.</span>
+    </div>
+    <div class="example">
+      If she <em style="color:#9d9dff">had left</em> earlier, she <em style="color:#9d9dff">wouldn't have missed</em> the train.
+      <span>Если бы она вышла раньше, не опоздала бы на поезд.</span>
+    </div>
+    <div class="example">
+      If they <em style="color:#9d9dff">had known</em> about the traffic, they <em style="color:#9d9dff">would have taken</em> another route.
+      <span>Если бы они знали о пробках, выбрали бы другой маршрут.</span>
+    </div>
+    <p style="margin-top:12px"><strong style="color:#c8c8ff">Важно:</strong> Ситуация уже в прошлом и изменить её нельзя.</p>
+    <p>Отрицание: <em style="color:#9d9dff">wouldn't have</em> + past participle<br>Разговорная форма: <em style="color:#9d9dff">would've / hadn't</em></p>
+    <button class="modal-close" onclick="hideRule()">Понятно ✓</button>
+  </div>
+</div>
+<script>
+const sentences = [
+  {words:["If","I","had","studied","harder,","I","would","have","passed","the","exam"],ru:"Если бы я учился усерднее, я бы сдал экзамен"},
+  {words:["If","she","had","left","earlier,","she","wouldn't","have","missed","the","train"],ru:"Если бы она вышла раньше, не опоздала бы на поезд"},
+  {words:["If","they","had","known","about","the","traffic,","they","would","have","taken","another","route"],ru:"Если бы они знали о пробках, выбрали бы другой маршрут"},
+  {words:["If","I","had","saved","more","money,","I","would","have","bought","a","car"],ru:"Если бы я накопил больше денег, купил бы машину"},
+  {words:["If","he","had","asked","for","help,","he","wouldn't","have","failed"],ru:"Если бы он попросил помощи, не потерпел бы неудачу"},
+  {words:["If","you","had","told","me","the","truth,","I","would","have","forgiven","you"],ru:"Если бы ты сказал мне правду, я бы простил тебя"},
+  {words:["If","she","had","practised","more,","she","would","have","won","the","competition"],ru:"Если бы она больше тренировалась, выиграла бы соревнование"},
+  {words:["If","I","had","woken","up","earlier,","I","wouldn't","have","been","late"],ru:"Если бы я проснулся раньше, не опоздал бы"},
+  {words:["If","we","had","booked","the","hotel","in","advance,","we","would","have","had","a","room"],ru:"Если бы мы забронировали гостиницу заранее, у нас был бы номер"},
+  {words:["If","he","had","eaten","breakfast,","he","wouldn't","have","felt","dizzy"],ru:"Если бы он поел утром, ему бы не стало плохо"},
+  {words:["If","I","had","brought","my","umbrella,","I","wouldn't","have","got","wet"],ru:"Если бы я взял зонт, не промок бы"},
+  {words:["If","she","had","applied","for","the","job,","she","would","have","got","it"],ru:"Если бы она подала заявку на работу, её бы взяли"},
+  {words:["If","they","had","listened","to","us,","they","wouldn't","have","made","that","mistake"],ru:"Если бы они нас послушали, не совершили бы той ошибки"},
+  {words:["If","I","had","known","you","were","coming,","I","would","have","cooked","dinner"],ru:"Если бы я знал, что ты придёшь, приготовил бы ужин"},
+  {words:["If","he","had","taken","the","medicine,","he","would","have","recovered","faster"],ru:"Если бы он принял лекарство, выздоровел бы быстрее"},
+  {words:["If","you","had","charged","your","phone,","it","wouldn't","have","died"],ru:"Если бы ты зарядил телефон, он бы не выключился"},
+  {words:["If","she","had","read","the","contract,","she","wouldn't","have","signed","it"],ru:"Если бы она прочитала контракт, не подписала бы его"},
+  {words:["If","I","had","gone","to","the","doctor","sooner,","I","would","have","recovered","faster"],ru:"Если бы я пошёл к врачу раньше, выздоровел бы быстрее"},
+  {words:["If","we","had","left","earlier,","we","wouldn't","have","missed","the","flight"],ru:"Если бы мы уехали раньше, не опоздали бы на рейс"},
+  {words:["If","he","had","worked","harder,","he","would","have","got","the","promotion"],ru:"Если бы он работал усерднее, получил бы повышение"},
+  {words:["If","I","had","studied","medicine,","I","would","have","become","a","doctor"],ru:"Если бы я изучал медицину, стал бы врачом"},
+  {words:["If","she","had","been","more","careful,","she","wouldn't","have","broken","her","phone"],ru:"Если бы она была осторожнее, не разбила бы телефон"},
+  {words:["If","they","had","invested","earlier,","they","would","have","made","a","lot","of","money"],ru:"Если бы они инвестировали раньше, заработали бы много денег"},
+  {words:["If","I","had","listened","to","my","parents,","I","would","have","avoided","many","problems"],ru:"Если бы я слушался родителей, избежал бы многих проблем"},
+  {words:["If","he","had","not","been","late,","he","would","have","got","the","job"],ru:"Если бы он не опоздал, получил бы работу"},
+  {words:["If","you","had","saved","your","work,","you","wouldn't","have","lost","it"],ru:"Если бы ты сохранил работу, не потерял бы её"},
+  {words:["If","she","had","asked","for","directions,","she","wouldn't","have","got","lost"],ru:"Если бы она спросила дорогу, не заблудилась бы"},
+  {words:["If","I","had","taken","that","job,","I","would","have","moved","to","London"],ru:"Если бы я принял ту работу, переехал бы в Лондон"},
+  {words:["If","we","had","studied","together,","we","would","have","done","better"],ru:"Если бы мы занимались вместе, справились бы лучше"},
+  {words:["If","he","had","driven","more","slowly,","he","wouldn't","have","had","an","accident"],ru:"Если бы он ехал медленнее, не попал бы в аварию"},
+  {words:["If","I","had","not","forgotten","my","passport,","I","could","have","boarded","the","plane"],ru:"Если бы я не забыл паспорт, смог бы сесть на самолёт"},
+  {words:["If","she","had","slept","more,","she","would","have","felt","better"],ru:"Если бы она больше спала, чувствовала бы себя лучше"},
+  {words:["If","they","had","communicated","better,","they","wouldn't","have","argued"],ru:"Если бы они лучше общались, не поспорили бы"},
+  {words:["If","I","had","trained","every","day,","I","would","have","finished","the","race"],ru:"Если бы я тренировался каждый день, финишировал бы на гонке"},
+  {words:["If","you","had","been","there,","you","would","have","loved","it"],ru:"Если бы ты был там, тебе бы очень понравилось"},
+  {words:["If","he","had","read","the","instructions,","he","wouldn't","have","broken","the","machine"],ru:"Если бы он прочитал инструкцию, не сломал бы машину"},
+  {words:["If","I","had","known","it","would","rain,","I","would","have","taken","an","umbrella"],ru:"Если бы я знал, что будет дождь, взял бы зонт"},
+  {words:["If","she","had","not","quit","school,","she","would","have","graduated","on","time"],ru:"Если бы она не бросила школу, закончила бы вовремя"},
+  {words:["If","I","had","met","him","earlier,","we","would","have","become","good","friends"],ru:"Если бы я познакомился с ним раньше, мы бы стали хорошими друзьями"},
+  {words:["If","they","had","taken","a","map,","they","wouldn't","have","got","lost"],ru:"Если бы они взяли карту, не заблудились бы"},
+  {words:["If","I","had","practised","speaking,","my","accent","would","have","improved"],ru:"Если бы я практиковал разговорную речь, мой акцент улучшился бы"},
+  {words:["If","he","had","apologised","sooner,","she","would","have","forgiven","him"],ru:"Если бы он извинился раньше, она бы простила его"},
+  {words:["If","you","had","read","the","email,","you","would","have","known","about","the","meeting"],ru:"Если бы ты прочитал письмо, знал бы о встрече"},
+  {words:["If","I","had","not","wasted","time,","I","would","have","finished","on","time"],ru:"Если бы я не тратил время впустую, закончил бы вовремя"},
+  {words:["If","she","had","worn","a","coat,","she","wouldn't","have","caught","a","cold"],ru:"Если бы она надела пальто, не простудилась бы"},
+  {words:["If","they","had","prepared","more,","the","presentation","would","have","gone","better"],ru:"Если бы они больше готовились, презентация прошла бы лучше"},
+  {words:["If","I","had","seen","the","warning,","I","would","have","been","more","careful"],ru:"Если бы я увидел предупреждение, был бы осторожнее"},
+  {words:["If","he","had","kept","his","promise,","she","would","have","trusted","him"],ru:"Если бы он сдержал обещание, она бы ему доверяла"},
+  {words:["If","you","had","asked","me,","I","would","have","helped","you"],ru:"Если бы ты спросил меня, я бы помог"},
+  {words:["If","I","had","bought","that","house,","I","would","have","made","a","profit"],ru:"Если бы я купил тот дом, получил бы прибыль"},
+  {words:["If","she","had","not","lost","her","ticket,","she","would","have","got","in"],ru:"Если бы она не потеряла билет, прошла бы"},
+  {words:["If","they","had","arrived","on","time,","the","meeting","would","have","started"],ru:"Если бы они приехали вовремя, встреча бы началась"},
+  {words:["If","I","had","eaten","less,","I","wouldn't","have","felt","so","full"],ru:"Если бы я съел меньше, не чувствовал бы себя таким сытым"},
+  {words:["If","he","had","stayed","calm,","the","argument","would","have","been","shorter"],ru:"Если бы он сохранял спокойствие, спор был бы короче"},
+  {words:["If","you","had","turned","left,","you","would","have","found","the","café"],ru:"Если бы ты повернул налево, нашёл бы кафе"},
+  {words:["If","I","had","started","earlier,","I","would","have","finished","by","noon"],ru:"Если бы я начал раньше, закончил бы к полудню"},
+  {words:["If","she","had","joined","the","team","sooner,","they","would","have","won"],ru:"Если бы она присоединилась к команде раньше, они бы победили"},
+  {words:["If","I","had","not","dropped","my","phone,","the","screen","wouldn't","have","cracked"],ru:"Если бы я не уронил телефон, экран бы не треснул"},
+  {words:["If","they","had","used","a","different","strategy,","they","would","have","succeeded"],ru:"Если бы они использовали другую стратегию, добились бы успеха"},
+  {words:["If","he","had","backed","up","his","files,","he","wouldn't","have","lost","his","work"],ru:"Если бы он сделал резервную копию, не потерял бы работу"},
+  {words:["If","I","had","learned","to","drive","earlier,","I","would","have","been","more","independent"],ru:"Если бы я научился водить раньше, был бы более самостоятельным"},
+  {words:["If","you","had","smiled","more,","people","would","have","liked","you","better"],ru:"Если бы ты чаще улыбался, ты бы нравился людям больше"},
+  {words:["If","she","had","not","interrupted","him,","he","would","have","finished","his","speech"],ru:"Если бы она не перебила его, он бы завершил речь"},
+  {words:["If","I","had","checked","the","weather,","I","would","have","known","it","was","going","to","snow"],ru:"Если бы я проверил погоду, знал бы, что будет снег"},
+  {words:["If","he","had","been","more","polite,","the","manager","would","have","helped","him"],ru:"Если бы он был вежливее, менеджер помог бы ему"},
+  {words:["If","they","had","organised","the","event","better,","more","people","would","have","come"],ru:"Если бы они лучше организовали мероприятие, пришло бы больше людей"},
+  {words:["If","I","had","not","forgotten","her","birthday,","she","wouldn't","have","been","upset"],ru:"Если бы я не забыл её день рождения, она бы не расстроилась"},
+  {words:["If","she","had","spoken","up,","they","would","have","listened"],ru:"Если бы она высказалась, её бы послушали"},
+  {words:["If","you","had","taken","the","earlier","train,","you","would","have","been","on","time"],ru:"Если бы ты сел на более ранний поезд, приехал бы вовремя"},
+  {words:["If","I","had","not","been","so","nervous,","I","would","have","done","better","at","the","interview"],ru:"Если бы я не так нервничал, лучше прошёл бы собеседование"},
+  {words:["If","she","had","eaten","more","slowly,","she","wouldn't","have","had","a","stomach","ache"],ru:"Если бы она ела медленнее, у неё не болел бы живот"},
+  {words:["If","they","had","hired","more","staff,","they","would","have","handled","the","demand"],ru:"Если бы они наняли больше сотрудников, справились бы со спросом"},
+  {words:["If","I","had","paid","attention","in","class,","I","would","have","understood","the","lesson"],ru:"Если бы я слушал на уроке, понял бы материал"},
+  {words:["If","he","had","not","overslept,","he","would","have","caught","the","flight"],ru:"Если бы он не проспал, успел бы на рейс"},
+  {words:["If","you","had","worn","sunscreen,","you","wouldn't","have","got","burnt"],ru:"Если бы ты использовал солнцезащитный крем, не обгорел бы"},
+  {words:["If","I","had","read","more","books","as","a","child,","I","would","have","had","a","richer","vocabulary"],ru:"Если бы я читал больше книг в детстве, у меня был бы богаче словарный запас"},
+  {words:["If","she","had","not","been","distracted,","she","would","have","noticed","the","error"],ru:"Если бы она не отвлекалась, заметила бы ошибку"},
+  {words:["If","they","had","started","the","company","earlier,","it","would","have","grown","bigger"],ru:"Если бы они основали компанию раньше, она бы стала крупнее"},
+  {words:["If","I","had","remembered","to","lock","the","door,","we","wouldn't","have","been","robbed"],ru:"Если бы я не забыл закрыть дверь, нас бы не ограбили"},
+  {words:["If","you","had","done","your","homework,","you","would","have","understood","the","material"],ru:"Если бы ты сделал домашнее задание, понял бы материал"},
+  {words:["If","he","had","not","lied,","she","would","have","stayed","with","him"],ru:"Если бы он не солгал, она бы осталась с ним"},
+  {words:["If","I","had","been","more","confident,","I","would","have","spoken","at","the","meeting"],ru:"Если бы я был увереннее, выступил бы на встрече"},
+  {words:["If","she","had","kept","in","touch,","they","would","have","remained","friends"],ru:"Если бы она поддерживала связь, они бы остались друзьями"},
+  {words:["If","I","had","not","spent","so","much,","I","would","have","had","savings"],ru:"Если бы я не тратил так много, у меня были бы сбережения"},
+  {words:["If","they","had","travelled","more,","they","would","have","gained","more","experience"],ru:"Если бы они больше путешествовали, получили бы больше опыта"},
+  {words:["If","he","had","noticed","the","sign,","he","wouldn't","have","parked","there"],ru:"Если бы он заметил знак, не припарковался бы там"},
+  {words:["If","you","had","prepared","better,","the","test","would","have","been","easier"],ru:"Если бы ты лучше подготовился, тест был бы легче"},
+  {words:["If","I","had","not","taken","the","wrong","turn,","I","would","have","arrived","earlier"],ru:"Если бы я не свернул не туда, приехал бы раньше"},
+  {words:["If","she","had","tried","harder,","she","would","have","achieved","her","goal"],ru:"Если бы она старалась сильнее, достигла бы своей цели"},
+  {words:["If","they","had","brought","more","food,","everyone","would","have","been","satisfied"],ru:"Если бы они принесли больше еды, все были бы сыты"},
+  {words:["If","I","had","not","procrastinated,","I","would","have","submitted","on","time"],ru:"Если бы я не откладывал, сдал бы вовремя"},
+  {words:["If","he","had","set","an","alarm,","he","wouldn't","have","slept","in"],ru:"Если бы он поставил будильник, не проспал бы"},
+  {words:["If","you","had","given","me","a","heads-up,","I","would","have","been","prepared"],ru:"Если бы ты предупредил меня, я был бы готов"},
+  {words:["If","I","had","accepted","that","offer,","my","life","would","have","been","very","different"],ru:"Если бы я принял то предложение, моя жизнь была бы совсем другой"},
+  {words:["If","she","had","believed","in","herself,","she","would","have","succeeded"],ru:"Если бы она верила в себя, добилась бы успеха"},
+  {words:["If","they","had","tested","the","software,","the","bug","would","have","been","found"],ru:"Если бы они протестировали программу, баг был бы найден"},
+  {words:["If","I","had","arrived","five","minutes","earlier,","I","would","have","got","a","seat"],ru:"Если бы я пришёл на пять минут раньше, занял бы место"},
+  {words:["If","he","had","been","kinder,","she","wouldn't","have","left"],ru:"Если бы он был добрее, она бы не ушла"}
+];
+
+let queue = [], current = null, answer = [], correct = 0, total = 0;
+let checked = false, shuffledWords = [];
+
+function strip(w) { return w.replace(/,+$/, ''); }
+function display(w) {
+  const s = strip(w);
+  return s === 'I' ? s : s.toLowerCase();
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function restart() {
+  queue = shuffle(sentences);
+  correct = 0; total = 0;
+  document.getElementById('finish').classList.remove('show');
+  document.getElementById('game').style.display = '';
+  updateScore();
+  nextQuestion();
+}
+function nextQuestion() {
+  if (queue.length === 0) { showFinish(); return; }
+  current = queue.shift();
+  answer = [];
+  checked = false;
+  const sa = document.getElementById('sentence-area');
+  sa.className = 'sentence-area';
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('btn-check').textContent = 'Check ✓';
+  document.getElementById('btn-check').onclick = check;
+  document.getElementById('task-ru').textContent = current.ru;
+  shuffledWords = shuffle(current.words.map((w, i) => ({ w, id: i })));
+  renderBank(shuffledWords);
+  renderAnswer();
+  updateProgress();
+}
+function renderBank(items) {
+  const bank = document.getElementById('word-bank');
+  bank.innerHTML = '';
+  items.forEach(item => {
+    if (answer.find(a => a.id === item.id)) return;
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = display(item.w);
+    chip.onclick = () => pickWord(item);
+    bank.appendChild(chip);
+  });
+}
+function renderAnswer() {
+  const sa = document.getElementById('sentence-area');
+  const ph = document.getElementById('placeholder');
+  sa.querySelectorAll('.chip').forEach(c => c.remove());
+  if (answer.length === 0) { ph.style.display = ''; }
+  else {
+    ph.style.display = 'none';
+    answer.forEach(item => {
+      const chip = document.createElement('div');
+      chip.className = 'chip in-answer';
+      chip.textContent = display(item.w);
+      chip.onclick = () => removeWord(item);
+      sa.appendChild(chip);
+    });
+  }
+}
+function pickWord(item) {
+  if (checked) return;
+  answer.push(item);
+  renderAnswer();
+  renderBank(shuffledWords);
+}
+function removeWord(item) {
+  if (checked) return;
+  answer = answer.filter(a => a.id !== item.id);
+  renderAnswer();
+  renderBank(shuffledWords);
+}
+function check() {
+  if (answer.length === 0) return;
+  checked = true; total++;
+  const userSentence = answer.map(a => strip(a.w)).join(' ');
+  const correctSentence = current.words.map(strip).join(' ');
+  const isCorrect = userSentence === correctSentence;
+  if (isCorrect) correct++;
+  const sa = document.getElementById('sentence-area');
+  sa.classList.add(isCorrect ? 'correct' : 'wrong');
+  const fb = document.getElementById('feedback');
+  if (isCorrect) { fb.innerHTML = `<div class="correct-label">✓ Correct!</div>`; }
+  else { fb.innerHTML = `<div class="wrong-label">✗ Not quite</div><div class="answer">${current.words.map(strip).join(' ')}</div>`; }
+  updateScore();
+  const btn = document.getElementById('btn-check');
+  btn.textContent = 'Next →'; btn.onclick = nextQuestion;
+}
+function skip() {
+  if (checked) { nextQuestion(); return; }
+  total++; checked = true;
+  const sa = document.getElementById('sentence-area');
+  sa.classList.add('wrong');
+  document.getElementById('feedback').innerHTML = `<div class="wrong-label">Skipped</div><div class="answer">${current.words.map(strip).join(' ')}</div>`;
+  updateScore();
+  const btn = document.getElementById('btn-check');
+  btn.textContent = 'Next →'; btn.onclick = nextQuestion;
+}
+function updateScore() { document.getElementById('score').textContent = `${correct} / ${total}`; }
+function updateProgress() {
+  const done = sentences.length - queue.length - 1;
+  const pct = Math.max(0, (done / sentences.length) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+function showRule() { document.getElementById('modal').classList.add('show'); }
+function hideRule() { document.getElementById('modal').classList.remove('show'); }
+function showFinish() {
+  document.getElementById('game').style.display = 'none';
+  const f = document.getElementById('finish');
+  f.classList.add('show');
+  document.getElementById('final-score').innerHTML = `You got <strong style="color:#7b68ee">${correct}</strong> out of <strong>${total}</strong> correct.`;
+  document.getElementById('progress-bar').style.width = '100%';
+}
+restart();
+</script>
+</body>
+</html>

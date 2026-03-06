@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Conditionals — выбор типа</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f14; color: #f0f0f0;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 40px 16px 60px;
+    }
+    h1 { font-size: 13px; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+    .subtitle { font-size: 15px; color: #666; margin-bottom: 40px; text-align: center; }
+    .cards { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; }
+    .card { display: block; text-decoration: none; background: #1a1a2e; border: 1.5px solid #2e2e50; border-radius: 16px; padding: 20px 22px; transition: border-color 0.2s, background 0.2s; -webkit-tap-highlight-color: transparent; position: relative; }
+    .card:active { background: #20203a; border-color: #7b68ee; }
+    .card-top { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+    .badge { width: 42px; height: 42px; border-radius: 12px; background: #12122a; border: 1.5px solid #3d3d5c; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: #7b68ee; flex-shrink: 0; }
+    .card-title { font-size: 18px; font-weight: 600; color: #e0e0ff; }
+    .card-formula { font-size: 12px; color: #7b68ee; margin-top: 2px; font-family: "SF Mono", "Menlo", monospace; }
+    .card-desc { font-size: 13px; color: #666; line-height: 1.5; margin-left: 56px; }
+    .card-count { font-size: 11px; color: #444; margin-top: 10px; margin-left: 56px; }
+    .arrow { position: absolute; right: 22px; top: 50%; transform: translateY(-50%); font-size: 22px; color: #3d3d5c; }
+  </style>
+</head>
+<body>
+  <h1>English Practice</h1>
+  <p class="subtitle">Выбери тип условных предложений</p>
+
+  <div class="cards">
+    <a class="card" href="0.html">
+      <div class="card-top">
+        <div class="badge">0</div>
+        <div>
+          <div class="card-title">Zero Conditional</div>
+          <div class="card-formula">if + present simple → present simple</div>
+        </div>
+      </div>
+      <div class="card-desc">Общие истины и научные факты. То, что всегда верно.</div>
+      <div class="card-count">100 предложений</div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="card" href="1.html">
+      <div class="card-top">
+        <div class="badge">1</div>
+        <div>
+          <div class="card-title">First Conditional</div>
+          <div class="card-formula">if + present simple → will + verb</div>
+        </div>
+      </div>
+      <div class="card-desc">Реальные и вероятные ситуации в будущем.</div>
+      <div class="card-count">100 предложений</div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="card" href="2.html">
+      <div class="card-top">
+        <div class="badge">2</div>
+        <div>
+          <div class="card-title">Second Conditional</div>
+          <div class="card-formula">if + past simple → would + verb</div>
+        </div>
+      </div>
+      <div class="card-desc">Гипотетические ситуации в настоящем или будущем.</div>
+      <div class="card-count">100 предложений</div>
+      <span class="arrow">›</span>
+    </a>
+
+    <a class="card" href="3.html">
+      <div class="card-top">
+        <div class="badge">3</div>
+        <div>
+          <div class="card-title">Third Conditional</div>
+          <div class="card-formula">if + had + pp → would have + pp</div>
+        </div>
+      </div>
+      <div class="card-desc">Нереальные ситуации в прошлом. То, чего не произошло.</div>
+      <div class="card-count">100 предложений</div>
+      <span class="arrow">›</span>
+    </a>
+  </div>
+</body>

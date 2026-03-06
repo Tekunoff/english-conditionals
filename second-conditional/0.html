@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Zero Conditional</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f14; color: #f0f0f0;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 14px 16px 40px;
+    }
+    .top-bar { width: 100%; max-width: 480px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .top-bar h1 { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 1.5px; }
+    .btn-rule { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .progress-bar-wrap { width: 100%; max-width: 480px; background: #1e1e2a; border-radius: 6px; height: 5px; margin-bottom: 18px; }
+    .progress-bar { height: 5px; background: #7b68ee; border-radius: 6px; transition: width 0.4s ease; }
+    .task-card { width: 100%; max-width: 480px; background: #1a1a2e; border: 1.5px solid #2e2e50; border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+    .task-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .task-ru { font-size: 18px; color: #e0e0ff; line-height: 1.5; font-weight: 500; }
+    .sentence-area { width: 100%; max-width: 480px; min-height: 64px; background: #1a1a24; border: 2px solid #2e2e44; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; transition: border-color 0.3s; }
+    .sentence-area.correct { border-color: #4caf82; }
+    .sentence-area.wrong   { border-color: #e05c5c; }
+    .placeholder { color: #444; font-size: 14px; font-style: italic; }
+    .chip { background: #2a2a3e; border: 1.5px solid #3d3d5c; color: #d0d0f0; border-radius: 20px; padding: 8px 13px; font-size: 15px; cursor: pointer; user-select: none; transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .chip:active { transform: scale(0.95); }
+    .chip.in-answer { background: #35355a; border-color: #7b68ee; color: #c8c8ff; }
+    .bank-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; align-self: flex-start; max-width: 480px; width: 100%; }
+    .word-bank { width: 100%; max-width: 480px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; min-height: 44px; }
+    .btn-row { display: flex; gap: 12px; width: 100%; max-width: 480px; }
+    button { flex: 1; padding: 15px; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    button:active { transform: scale(0.97); }
+    #btn-check { background: #7b68ee; color: #fff; }
+    #btn-skip { background: #1e1e2a; color: #777; border: 1.5px solid #2e2e44; flex: 0 0 auto; padding: 15px 18px; }
+    .feedback { margin-top: 14px; width: 100%; max-width: 480px; font-size: 14px; line-height: 1.6; min-height: 44px; }
+    .feedback .correct-label { color: #4caf82; font-weight: 700; }
+    .feedback .wrong-label   { color: #e05c5c; font-weight: 700; }
+    .feedback .answer        { color: #9d9dff; margin-top: 4px; }
+    .score { position: fixed; top: 14px; right: 18px; font-size: 13px; color: #666; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #1a1a2e; border: 1.5px solid #3d3d5c; border-radius: 18px; padding: 24px 22px; max-width: 460px; width: 100%; max-height: 85vh; overflow-y: auto; }
+    .modal h2 { font-size: 18px; color: #9d9dff; margin-bottom: 16px; }
+    .modal .formula-block { background: #0f0f20; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; font-size: 15px; color: #c8c8ff; line-height: 1.8; }
+    .modal .formula-block em { color: #7b68ee; font-style: normal; font-weight: 600; }
+    .modal p { font-size: 14px; color: #aaa; line-height: 1.7; margin-bottom: 10px; }
+    .modal .example { background: #12122a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; color: #d0d0f0; line-height: 1.6; }
+    .modal .example span { display: block; color: #777; font-size: 13px; margin-top: 2px; font-style: italic; }
+    .modal-close { margin-top: 20px; width: 100%; background: #7b68ee; color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+    .finish { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-top: 40px; }
+    .finish.show { display: flex; }
+    .finish h2 { font-size: 28px; color: #7b68ee; }
+    .finish p  { font-size: 16px; color: #888; line-height: 1.6; }
+    .finish button { max-width: 220px; background: #7b68ee; color: #fff; }
+  </style>
+</head>
+<body>
+<div class="score" id="score">0 / 0</div>
+<div class="top-bar">
+  <h1>Zero Conditional</h1>
+  <button class="btn-rule" onclick="showRule()">📖 Правило</button>
+</div>
+<div class="progress-bar-wrap">
+  <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+</div>
+<div id="game">
+  <div class="task-card">
+    <div class="task-label">Переведи на английский</div>
+    <div class="task-ru" id="task-ru">...</div>
+  </div>
+  <div class="sentence-area" id="sentence-area">
+    <span class="placeholder" id="placeholder">Tap words to build the sentence</span>
+  </div>
+  <div class="bank-label">Слова</div>
+  <div class="word-bank" id="word-bank"></div>
+  <div class="btn-row">
+    <button id="btn-skip" onclick="skip()">Skip</button>
+    <button id="btn-check" onclick="check()">Check ✓</button>
+  </div>
+  <div class="feedback" id="feedback"></div>
+</div>
+<div class="finish" id="finish">
+  <h2>🎉 Готово!</h2>
+  <p id="final-score"></p>
+  <button onclick="restart()">Начать снова</button>
+</div>
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Zero Conditional — Правило</h2>
+    <div class="formula-block">
+      <em>If</em> + subject + <em>present simple</em>, subject + <em>present simple</em>
+    </div>
+    <p>Используется для <strong style="color:#c8c8ff">общих истин, научных фактов и привычных закономерностей</strong> — то, что всегда верно.</p>
+    <div class="example">
+      If you <em style="color:#9d9dff">heat</em> water to 100°C, it <em style="color:#9d9dff">boils</em>.
+      <span>Если нагреть воду до 100°C, она закипает.</span>
+    </div>
+    <div class="example">
+      If you <em style="color:#9d9dff">don't eat</em>, you <em style="color:#9d9dff">feel</em> hungry.
+      <span>Если не есть, чувствуешь голод.</span>
+    </div>
+    <div class="example">
+      If it <em style="color:#9d9dff">rains</em>, the ground <em style="color:#9d9dff">gets</em> wet.
+      <span>Если идёт дождь, земля намокает.</span>
+    </div>
+    <p style="margin-top:12px"><strong style="color:#c8c8ff">Важно:</strong> «If» можно заменить на «when» без изменения смысла.</p>
+    <p>Отрицание: <em style="color:#9d9dff">don't / doesn't</em> + verb<br>Вопрос: <em style="color:#9d9dff">Do / Does</em> + subject + verb...?</p>
+    <button class="modal-close" onclick="hideRule()">Понятно ✓</button>
+  </div>
+</div>
+<script>
+const sentences = [
+  {words:["If","you","heat","water","to","100","degrees,","it","boils"],ru:"Если нагреть воду до 100 градусов, она закипает"},
+  {words:["If","it","rains,","the","ground","gets","wet"],ru:"Если идёт дождь, земля намокает"},
+  {words:["If","you","mix","red","and","blue,","you","get","purple"],ru:"Если смешать красный и синий, получится фиолетовый"},
+  {words:["If","you","don't","eat,","you","get","hungry"],ru:"Если не есть, проголодаешься"},
+  {words:["If","you","exercise","regularly,","you","feel","better"],ru:"Если регулярно заниматься спортом, чувствуешь себя лучше"},
+  {words:["If","the","sun","sets,","it","gets","dark"],ru:"Если заходит солнце, темнеет"},
+  {words:["If","you","touch","fire,","it","burns"],ru:"Если прикоснуться к огню, будет ожог"},
+  {words:["If","you","study","hard,","you","get","good","grades"],ru:"Если усердно учиться, получаешь хорошие оценки"},
+  {words:["If","you","press","the","button,","the","door","opens"],ru:"Если нажать кнопку, дверь открывается"},
+  {words:["If","cats","are","hungry,","they","meow"],ru:"Если кошки голодны, они мяукают"},
+  {words:["If","you","don't","sleep","enough,","you","feel","tired"],ru:"Если недостаточно спать, чувствуешь усталость"},
+  {words:["If","you","add","salt","to","water,","it","boils","faster"],ru:"Если добавить соль в воду, она закипит быстрее"},
+  {words:["If","ice","gets","warm,","it","melts"],ru:"Если лёд нагревается, он тает"},
+  {words:["If","you","drop","something,","it","falls"],ru:"Если что-то уронить, оно падает"},
+  {words:["If","you","leave","metal","in","the","rain,","it","rusts"],ru:"Если оставить металл под дождём, он ржавеет"},
+  {words:["If","you","water","plants,","they","grow"],ru:"Если поливать растения, они растут"},
+  {words:["If","it","snows,","the","roads","become","slippery"],ru:"Если идёт снег, дороги становятся скользкими"},
+  {words:["If","you","mix","water","and","oil,","they","don't","combine"],ru:"Если смешать воду и масло, они не соединяются"},
+  {words:["If","you","work","out,","your","muscles","get","stronger"],ru:"Если тренироваться, мышцы становятся сильнее"},
+  {words:["If","you","eat","too","much","sugar,","you","gain","weight"],ru:"Если есть слишком много сахара, набираешь вес"},
+  {words:["If","the","temperature","drops","below","zero,","water","freezes"],ru:"Если температура опускается ниже нуля, вода замерзает"},
+  {words:["If","dogs","are","scared,","they","bark"],ru:"Если собаки испуганы, они лают"},
+  {words:["If","you","press","the","gas","pedal,","the","car","accelerates"],ru:"Если нажать на газ, машина ускоряется"},
+  {words:["If","you","mix","yellow","and","blue,","you","get","green"],ru:"Если смешать жёлтый и синий, получишь зелёный"},
+  {words:["If","you","don't","water","flowers,","they","die"],ru:"Если не поливать цветы, они вянут"},
+  {words:["If","you","read","a","lot,","your","vocabulary","grows"],ru:"Если много читать, словарный запас растёт"},
+  {words:["If","you","eat","breakfast,","you","have","more","energy"],ru:"Если завтракать, энергии больше"},
+  {words:["If","it","gets","cold,","people","wear","coats"],ru:"Если становится холодно, люди надевают пальто"},
+  {words:["If","you","don't","brush","your","teeth,","they","decay"],ru:"Если не чистить зубы, они разрушаются"},
+  {words:["If","you","heat","metal,","it","expands"],ru:"Если нагреть металл, он расширяется"},
+  {words:["If","you","don't","drink","water,","you","get","thirsty"],ru:"Если не пить воду, хочется пить"},
+  {words:["If","you","spend","more","than","you","earn,","you","go","into","debt"],ru:"Если тратить больше, чем зарабатываешь, залезешь в долги"},
+  {words:["If","you","mix","vinegar","and","baking","soda,","it","fizzes"],ru:"Если смешать уксус и соду, получится шипение"},
+  {words:["If","you","smile","at","people,","they","usually","smile","back"],ru:"Если улыбаться людям, они обычно улыбаются в ответ"},
+  {words:["If","you","practise","every","day,","you","improve"],ru:"Если заниматься каждый день, прогрессируешь"},
+  {words:["If","the","alarm","rings,","I","wake","up"],ru:"Если звенит будильник, я просыпаюсь"},
+  {words:["If","wood","burns,","you","get","ash"],ru:"Если дерево горит, остаётся зола"},
+  {words:["If","you","take","medicine,","you","feel","better"],ru:"Если принять лекарство, чувствуешь себя лучше"},
+  {words:["If","you","charge","your","phone,","the","battery","fills","up"],ru:"Если зарядить телефон, аккумулятор заполняется"},
+  {words:["If","earthquakes","happen,","buildings","shake"],ru:"Если происходят землетрясения, здания трясутся"},
+  {words:["If","cats","see","a","mouse,","they","chase","it"],ru:"Если кошки видят мышь, они её преследуют"},
+  {words:["If","you","freeze","fruit,","it","lasts","longer"],ru:"Если заморозить фрукты, они хранятся дольше"},
+  {words:["If","you","type","a","wrong","password,","you","can't","log","in"],ru:"Если ввести неверный пароль, войти не получится"},
+  {words:["If","you","watch","too","much","TV,","your","eyes","get","tired"],ru:"Если слишком много смотреть телевизор, устают глаза"},
+  {words:["If","you","forget","to","save,","you","lose","your","work"],ru:"Если забыть сохранить, работа потеряется"},
+  {words:["If","you","go","outside","in","the","sun,","you","get","a","tan"],ru:"Если выходить на солнце, появляется загар"},
+  {words:["If","you","add","lemon","to","milk,","it","curdles"],ru:"Если добавить лимон в молоко, оно свернётся"},
+  {words:["If","you","put","salt","on","ice,","it","melts"],ru:"Если посыпать лёд солью, он тает"},
+  {words:["If","you","press","delete,","the","file","disappears"],ru:"Если нажать «удалить», файл исчезает"},
+  {words:["If","you","go","to","bed","late,","you","wake","up","tired"],ru:"Если ложиться поздно, просыпаешься усталым"},
+  {words:["If","it","is","very","hot,","ice","cream","melts","fast"],ru:"Если очень жарко, мороженое тает быстро"},
+  {words:["If","you","boil","an","egg","for","ten","minutes,","it","becomes","hard"],ru:"Если варить яйцо десять минут, оно становится твёрдым"},
+  {words:["If","you","don't","move","for","a","long","time,","your","muscles","get","stiff"],ru:"Если долго не двигаться, мышцы затекают"},
+  {words:["If","you","add","yeast","to","dough,","it","rises"],ru:"Если добавить дрожжи в тесто, оно поднимается"},
+  {words:["If","plants","don't","get","light,","they","turn","yellow"],ru:"Если растения не получают свет, они желтеют"},
+  {words:["If","you","stretch","before","exercise,","you","reduce","injury","risk"],ru:"Если тянуться перед тренировкой, снижается риск травмы"},
+  {words:["If","you","drink","coffee","too","late,","you","can't","sleep"],ru:"Если пить кофе слишком поздно, не уснёшь"},
+  {words:["If","a","fire","runs","out","of","oxygen,","it","goes","out"],ru:"Если огонь лишается кислорода, он гаснет"},
+  {words:["If","you","learn","by","doing,","you","remember","more"],ru:"Если учиться на практике, запоминаешь больше"},
+  {words:["If","you","talk","too","much,","people","stop","listening"],ru:"Если говорить слишком много, люди перестают слушать"},
+  {words:["If","you","expose","iron","to","moisture,","it","rusts"],ru:"Если подвергать железо воздействию влаги, оно ржавеет"},
+  {words:["If","you","multiply","a","number","by","zero,","you","get","zero"],ru:"Если умножить число на ноль, получишь ноль"},
+  {words:["If","you","spend","time","in","nature,","you","feel","relaxed"],ru:"Если проводить время на природе, чувствуешь расслабление"},
+  {words:["If","bees","sense","danger,","they","sting"],ru:"Если пчёлы чувствуют опасность, они жалят"},
+  {words:["If","you","stand","in","the","wind,","you","get","cold"],ru:"Если стоять на ветру, замерзаешь"},
+  {words:["If","you","eat","spicy","food,","your","mouth","burns"],ru:"Если есть острую еду, рот горит"},
+  {words:["If","you","wash","clothes","in","hot","water,","they","shrink"],ru:"Если стирать одежду в горячей воде, она садится"},
+  {words:["If","you","run","a","program,","the","computer","executes","it"],ru:"Если запустить программу, компьютер выполняет её"},
+  {words:["If","people","are","stressed,","they","make","more","mistakes"],ru:"Если люди напряжены, они совершают больше ошибок"},
+  {words:["If","you","cool","steam,","it","turns","back","into","water"],ru:"Если охладить пар, он превращается обратно в воду"},
+  {words:["If","you","spend","time","with","loved","ones,","you","feel","happy"],ru:"Если проводить время с близкими, чувствуешь счастье"},
+  {words:["If","you","press","a","bruise,","it","hurts"],ru:"Если надавить на синяк, будет больно"},
+  {words:["If","you","give","a","dog","a","bone,","it","chews","it"],ru:"Если дать собаке кость, она её грызёт"},
+  {words:["If","you","leave","food","out","too","long,","it","spoils"],ru:"Если оставить еду надолго, она портится"},
+  {words:["If","you","mix","hot","and","cold","water,","you","get","warm","water"],ru:"Если смешать горячую и холодную воду, получишь тёплую"},
+  {words:["If","you","don't","put","sunscreen","on,","you","get","sunburnt"],ru:"Если не нанести солнцезащитный крем, получишь солнечный ожог"},
+  {words:["If","you","do","something","repeatedly,","it","becomes","a","habit"],ru:"Если делать что-то повторяющимся образом, это становится привычкой"},
+  {words:["If","you","apply","heat","to","butter,","it","melts"],ru:"Если нагреть масло, оно тает"},
+  {words:["If","you","remove","a","source","of","light,","it","gets","dark"],ru:"Если убрать источник света, становится темно"},
+  {words:["If","you","turn","off","the","internet,","you","lose","connection"],ru:"Если отключить интернет, теряется соединение"},
+  {words:["If","you","are","kind","to","others,","they","are","kind","to","you"],ru:"Если относиться к другим добро, они отвечают добром"},
+  {words:["If","you","put","a","magnet","near","metal,","it","attracts","it"],ru:"Если поднести магнит к металлу, он притягивает его"},
+  {words:["If","you","compress","air,","it","heats","up"],ru:"Если сжать воздух, он нагревается"},
+  {words:["If","you","don't","use","it,","you","lose","it"],ru:"Если не использовать навык, он теряется"},
+  {words:["If","you","chill","drinks,","they","taste","better"],ru:"Если охладить напитки, они вкуснее"},
+  {words:["If","you","put","a","lid","on","a","boiling","pot,","it","heats","up","faster"],ru:"Если накрыть кипящий горшок крышкой, вода нагревается быстрее"},
+  {words:["If","you","get","too","little","vitamin","D,","you","feel","tired"],ru:"Если получать слишком мало витамина D, чувствуешь усталость"},
+  {words:["If","you","dilute","acid","with","water,","it","becomes","less","dangerous"],ru:"Если разбавить кислоту водой, она становится менее опасной"},
+  {words:["If","you","mix","primary","colours,","you","get","secondary","colours"],ru:"Если смешать основные цвета, получаются вторичные"},
+  {words:["If","you","save","time,","you","can","do","more","things"],ru:"Если экономить время, можно делать больше дел"},
+  {words:["If","you","go","to","sleep","at","the","same","time","every","night,","you","sleep","better"],ru:"Если ложиться спать в одно и то же время каждую ночь, сон улучшается"},
+  {words:["If","you","increase","pressure","on","a","gas,","its","volume","decreases"],ru:"Если увеличить давление на газ, его объём уменьшается"},
+  {words:["If","you","apply","too","much","pressure,","things","break"],ru:"Если применить слишком много давления, вещи ломаются"},
+  {words:["If","you","don't","pay","attention,","you","make","mistakes"],ru:"Если не обращать внимания, совершаешь ошибки"},
+  {words:["If","you","keep","a","routine,","your","day","becomes","more","productive"],ru:"Если придерживаться распорядка, день становится продуктивнее"},
+  {words:["If","birds","migrate,","they","fly","south"],ru:"Если птицы мигрируют, они летят на юг"},
+  {words:["If","you","divide","any","number","by","one,","you","get","the","same","number"],ru:"Если разделить число на единицу, получишь то же число"}
+];
+
+let queue = [], current = null, answer = [], correct = 0, total = 0;
+let checked = false, shuffledWords = [];
+
+function strip(w) { return w.replace(/,+$/, ''); }
+function display(w) {
+  const s = strip(w);
+  return s === 'I' ? s : s.toLowerCase();
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function restart() {
+  queue = shuffle(sentences);
+  correct = 0; total = 0;
+  document.getElementById('finish').classList.remove('show');
+  document.getElementById('game').style.display = '';
+  updateScore();
+  nextQuestion();
+}
+function nextQuestion() {
+  if (queue.length === 0) { showFinish(); return; }
+  current = queue.shift();
+  answer = [];
+  checked = false;
+  const sa = document.getElementById('sentence-area');
+  sa.className = 'sentence-area';
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('btn-check').textContent = 'Check ✓';
+  document.getElementById('btn-check').onclick = check;
+  document.getElementById('task-ru').textContent = current.ru;
+  shuffledWords = shuffle(current.words.map((w, i) => ({ w, id: i })));
+  renderBank(shuffledWords);
+  renderAnswer();
+  updateProgress();
+}
+function renderBank(items) {
+  const bank = document.getElementById('word-bank');
+  bank.innerHTML = '';
+  items.forEach(item => {
+    if (answer.find(a => a.id === item.id)) return;
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = display(item.w);
+    chip.onclick = () => pickWord(item);
+    bank.appendChild(chip);
+  });
+}
+function renderAnswer() {
+  const sa = document.getElementById('sentence-area');
+  const ph = document.getElementById('placeholder');
+  sa.querySelectorAll('.chip').forEach(c => c.remove());
+  if (answer.length === 0) { ph.style.display = ''; }
+  else {
+    ph.style.display = 'none';
+    answer.forEach(item => {
+      const chip = document.createElement('div');
+      chip.className = 'chip in-answer';
+      chip.textContent = display(item.w);
+      chip.onclick = () => removeWord(item);
+      sa.appendChild(chip);
+    });
+  }
+}
+function pickWord(item) {
+  if (checked) return;
+  answer.push(item);
+  renderAnswer();
+  renderBank(shuffledWords);
+}
+function removeWord(item) {
+  if (checked) return;
+  answer = answer.filter(a => a.id !== item.id);
+  renderAnswer();
+  renderBank(shuffledWords);
+}
+function check() {
+  if (answer.length === 0) return;
+  checked = true; total++;
+  const userSentence = answer.map(a => strip(a.w)).join(' ');
+  const correctSentence = current.words.map(strip).join(' ');
+  const isCorrect = userSentence === correctSentence;
+  if (isCorrect) correct++;
+  const sa = document.getElementById('sentence-area');
+  sa.classList.add(isCorrect ? 'correct' : 'wrong');
+  const fb = document.getElementById('feedback');
+  if (isCorrect) { fb.innerHTML = `<div class="correct-label">✓ Correct!</div>`; }
+  else { fb.innerHTML = `<div class="wrong-label">✗ Not quite</div><div class="answer">${current.words.map(strip).join(' ')}</div>`; }
+  updateScore();
+  const btn = document.getElementById('btn-check');
+  btn.textContent = 'Next →'; btn.onclick = nextQuestion;
+}
+function skip() {
+  if (checked) { nextQuestion(); return; }
+  total++; checked = true;
+  const sa = document.getElementById('sentence-area');
+  sa.classList.add('wrong');
+  document.getElementById('feedback').innerHTML = `<div class="wrong-label">Skipped</div><div class="answer">${current.words.map(strip).join(' ')}</div>`;
+  updateScore();
+  const btn = document.getElementById('btn-check');
+  btn.textContent = 'Next →'; btn.onclick = nextQuestion;
+}
+function updateScore() { document.getElementById('score').textContent = `${correct} / ${total}`; }
+function updateProgress() {
+  const done = sentences.length - queue.length - 1;
+  const pct = Math.max(0, (done / sentences.length) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+function showRule() { document.getElementById('modal').classList.add('show'); }
+function hideRule() { document.getElementById('modal').classList.remove('show'); }
+function showFinish() {
+  document.getElementById('game').style.display = 'none';
+  const f = document.getElementById('finish');
+  f.classList.add('show');
+  document.getElementById('final-score').innerHTML = `You got <strong style="color:#7b68ee">${correct}</strong> out of <strong>${total}</strong> correct.`;
+  document.getElementById('progress-bar').style.width = '100%';
+}
+restart();
+</script>
+</body>
+</html>

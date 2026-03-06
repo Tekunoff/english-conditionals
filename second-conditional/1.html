@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>First Conditional</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f14; color: #f0f0f0;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 14px 16px 40px;
+    }
+    .top-bar { width: 100%; max-width: 480px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .top-bar h1 { font-size: 13px; color: #666; text-transform: uppercase; letter-spacing: 1.5px; }
+    .btn-rule { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .progress-bar-wrap { width: 100%; max-width: 480px; background: #1e1e2a; border-radius: 6px; height: 5px; margin-bottom: 18px; }
+    .progress-bar { height: 5px; background: #7b68ee; border-radius: 6px; transition: width 0.4s ease; }
+    .task-card { width: 100%; max-width: 480px; background: #1a1a2e; border: 1.5px solid #2e2e50; border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+    .task-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .task-ru { font-size: 18px; color: #e0e0ff; line-height: 1.5; font-weight: 500; }
+    .sentence-area { width: 100%; max-width: 480px; min-height: 64px; background: #1a1a24; border: 2px solid #2e2e44; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; transition: border-color 0.3s; }
+    .sentence-area.correct { border-color: #4caf82; }
+    .sentence-area.wrong   { border-color: #e05c5c; }
+    .placeholder { color: #444; font-size: 14px; font-style: italic; }
+    .chip { background: #2a2a3e; border: 1.5px solid #3d3d5c; color: #d0d0f0; border-radius: 20px; padding: 8px 13px; font-size: 15px; cursor: pointer; user-select: none; transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .chip:active { transform: scale(0.95); }
+    .chip.in-answer { background: #35355a; border-color: #7b68ee; color: #c8c8ff; }
+    .bank-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; align-self: flex-start; max-width: 480px; width: 100%; }
+    .word-bank { width: 100%; max-width: 480px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; min-height: 44px; }
+    .btn-row { display: flex; gap: 12px; width: 100%; max-width: 480px; }
+    button { flex: 1; padding: 15px; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    button:active { transform: scale(0.97); }
+    #btn-check { background: #7b68ee; color: #fff; }
+    #btn-skip { background: #1e1e2a; color: #777; border: 1.5px solid #2e2e44; flex: 0 0 auto; padding: 15px 18px; }
+    .feedback { margin-top: 14px; width: 100%; max-width: 480px; font-size: 14px; line-height: 1.6; min-height: 44px; }
+    .feedback .correct-label { color: #4caf82; font-weight: 700; }
+    .feedback .wrong-label   { color: #e05c5c; font-weight: 700; }
+    .feedback .answer        { color: #9d9dff; margin-top: 4px; }
+    .score { position: fixed; top: 14px; right: 18px; font-size: 13px; color: #666; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #1a1a2e; border: 1.5px solid #3d3d5c; border-radius: 18px; padding: 24px 22px; max-width: 460px; width: 100%; max-height: 85vh; overflow-y: auto; }
+    .modal h2 { font-size: 18px; color: #9d9dff; margin-bottom: 16px; }
+    .modal .formula-block { background: #0f0f20; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; font-size: 15px; color: #c8c8ff; line-height: 1.8; }
+    .modal .formula-block em { color: #7b68ee; font-style: normal; font-weight: 600; }
+    .modal p { font-size: 14px; color: #aaa; line-height: 1.7; margin-bottom: 10px; }
+    .modal .example { background: #12122a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; color: #d0d0f0; line-height: 1.6; }
+    .modal .example span { display: block; color: #777; font-size: 13px; margin-top: 2px; font-style: italic; }
+    .modal-close { margin-top: 20px; width: 100%; background: #7b68ee; color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+    .finish { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-top: 40px; }
+    .finish.show { display: flex; }
+    .finish h2 { font-size: 28px; color: #7b68ee; }
+    .finish p  { font-size: 16px; color: #888; line-height: 1.6; }
+    .finish button { max-width: 220px; background: #7b68ee; color: #fff; }
+  </style>
+</head>
+<body>
+<div class="score" id="score">0 / 0</div>
+<div class="top-bar">
+  <h1>First Conditional</h1>
+  <button class="btn-rule" onclick="showRule()">📖 Правило</button>
+</div>
+<div class="progress-bar-wrap">
+  <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+</div>
+<div id="game">
+  <div class="task-card">
+    <div class="task-label">Переведи на английский</div>
+    <div class="task-ru" id="task-ru">...</div>
+  </div>
+  <div class="sentence-area" id="sentence-area">
+    <span class="placeholder" id="placeholder">Tap words to build the sentence</span>
+  </div>
+  <div class="bank-label">Слова</div>
+  <div class="word-bank" id="word-bank"></div>
+  <div class="btn-row">
+    <button id="btn-skip" onclick="skip()">Skip</button>
+    <button id="btn-check" onclick="check()">Check ✓</button>
+  </div>
+  <div class="feedback" id="feedback"></div>
+</div>
+<div class="finish" id="finish">
+  <h2>🎉 Готово!</h2>
+  <p id="final-score"></p>
+  <button onclick="restart()">Начать снова</button>
+</div>
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>First Conditional — Правило</h2>
+    <div class="formula-block">
+      <em>If</em> + subject + <em>present simple</em>, subject + <em>will</em> + <em>bare infinitive</em>
+    </div>
+    <p>Используется для <strong style="color:#c8c8ff">реальных и вероятных</strong> ситуаций в будущем — то, что может произойти.</p>
+    <div class="example">
+      If it <em style="color:#9d9dff">rains</em> tomorrow, I <em style="color:#9d9dff">will stay</em> at home.
+      <span>Если завтра будет дождь, я останусь дома.</span>
+    </div>
+    <div class="example">
+      If you <em style="color:#9d9dff">study</em> hard, you <em style="color:#9d9dff">will pass</em> the exam.
+      <span>Если будешь усердно учиться, сдашь экзамен.</span>
+    </div>
+    <div class="example">
+      If she <em style="color:#9d9dff">calls</em>, I <em style="color:#9d9dff">will answer</em>.
+      <span>Если она позвонит, я отвечу.</span>
+    </div>
+    <p style="margin-top:12px"><strong style="color:#c8c8ff">Важно:</strong> После «if» — present simple, не «will».</p>
+    <p>Отрицание: <em style="color:#9d9dff">won't</em> + verb<br>Вопрос: <em style="color:#9d9dff">Will</em> + subject + verb...?</p>
+    <button class="modal-close" onclick="hideRule()">Понятно ✓</button>
+  </div>
+</div>
+<script>
+const sentences = [
+  {words:["If","it","rains","tomorrow,","I","will","stay","at","home"],ru:"Если завтра будет дождь, я останусь дома"},
+  {words:["If","you","study","hard,","you","will","pass","the","exam"],ru:"Если будешь усердно учиться, сдашь экзамен"},
+  {words:["If","she","calls,","I","will","answer"],ru:"Если она позвонит, я отвечу"},
+  {words:["If","I","finish","work","early,","I","will","go","to","the","gym"],ru:"Если я закончу работу рано, пойду в спортзал"},
+  {words:["If","he","arrives","on","time,","we","will","start","the","meeting"],ru:"Если он придёт вовремя, мы начнём встречу"},
+  {words:["If","you","eat","all","your","vegetables,","you","will","get","dessert"],ru:"Если съешь все овощи, получишь десерт"},
+  {words:["If","the","weather","is","nice,","we","will","have","a","picnic"],ru:"Если погода будет хорошей, мы устроим пикник"},
+  {words:["If","I","save","enough","money,","I","will","buy","a","new","laptop"],ru:"Если накоплю достаточно денег, куплю новый ноутбук"},
+  {words:["If","you","don't","hurry,","you","will","miss","the","bus"],ru:"Если не поторопишься, опоздаешь на автобус"},
+  {words:["If","she","practises","every","day,","she","will","become","fluent"],ru:"Если она будет заниматься каждый день, станет свободно говорить"},
+  {words:["If","we","leave","now,","we","will","arrive","on","time"],ru:"Если мы уйдём сейчас, приедем вовремя"},
+  {words:["If","he","doesn't","apologise,","she","will","be","angry"],ru:"Если он не извинится, она будет злиться"},
+  {words:["If","you","help","me,","I","will","help","you","in","return"],ru:"Если поможешь мне, я помогу тебе в ответ"},
+  {words:["If","it","gets","too","cold,","I","will","put","on","a","coat"],ru:"Если станет слишком холодно, я надену пальто"},
+  {words:["If","you","apply","for","the","job,","you","will","get","an","interview"],ru:"Если подашь заявку на работу, тебя пригласят на собеседование"},
+  {words:["If","I","feel","better","tomorrow,","I","will","go","to","work"],ru:"Если завтра почувствую себя лучше, пойду на работу"},
+  {words:["If","you","don't","water","the","plants,","they","will","die"],ru:"Если не поливать растения, они погибнут"},
+  {words:["If","she","passes","the","test,","her","parents","will","be","proud"],ru:"Если она сдаст тест, родители будут гордиться"},
+  {words:["If","I","get","a","raise,","I","will","take","a","holiday"],ru:"Если меня повысят, я возьму отпуск"},
+  {words:["If","you","don't","sleep","well,","you","will","feel","exhausted"],ru:"Если плохо поспишь, будешь чувствовать себя изможденным"},
+  {words:["If","we","work","together,","we","will","finish","faster"],ru:"Если будем работать вместе, закончим быстрее"},
+  {words:["If","he","trains","hard,","he","will","win","the","competition"],ru:"Если он будет усердно тренироваться, выиграет соревнование"},
+  {words:["If","you","book","early,","you","will","get","a","cheaper","ticket"],ru:"Если забронируешь заранее, получишь более дешёвый билет"},
+  {words:["If","it","doesn't","stop","raining,","we","will","cancel","the","trip"],ru:"Если дождь не прекратится, мы отменим поездку"},
+  {words:["If","she","reads","more,","her","English","will","improve"],ru:"Если она будет больше читать, её английский улучшится"},
+  {words:["If","I","wake","up","early,","I","will","go","for","a","run"],ru:"Если встану рано, пойду на пробежку"},
+  {words:["If","you","don't","study,","you","will","fail","the","exam"],ru:"Если не будешь учиться, провалишь экзамен"},
+  {words:["If","the","train","is","late,","we","will","take","a","taxi"],ru:"Если поезд опоздает, мы возьмём такси"},
+  {words:["If","he","asks","me,","I","will","tell","him","the","truth"],ru:"Если он спросит, я скажу ему правду"},
+  {words:["If","you","eat","fast","food","every","day,","you","will","gain","weight"],ru:"Если есть фастфуд каждый день, наберёшь вес"},
+  {words:["If","I","see","her,","I","will","give","her","your","message"],ru:"Если увижу её, передам твоё сообщение"},
+  {words:["If","you","sign","up","now,","you","will","get","a","free","month"],ru:"Если зарегистрируешься сейчас, получишь бесплатный месяц"},
+  {words:["If","the","project","succeeds,","we","will","all","get","a","bonus"],ru:"Если проект будет успешным, все получим премию"},
+  {words:["If","she","doesn't","come,","we","will","start","without","her"],ru:"Если она не придёт, начнём без неё"},
+  {words:["If","I","find","a","better","deal,","I","will","switch","providers"],ru:"Если найду более выгодное предложение, сменю провайдера"},
+  {words:["If","you","don't","charge","your","phone,","it","will","die"],ru:"Если не зарядить телефон, он выключится"},
+  {words:["If","he","listens","to","our","advice,","he","will","succeed"],ru:"Если он прислушается к нашему совету, у него получится"},
+  {words:["If","we","miss","the","flight,","we","will","have","to","rebook"],ru:"Если пропустим рейс, придётся перебронировать"},
+  {words:["If","you","tell","the","truth,","people","will","trust","you"],ru:"Если говорить правду, люди будут тебе доверять"},
+  {words:["If","I","don't","find","my","keys,","I","won't","be","able","to","leave"],ru:"Если не найду ключи, не смогу уйти"},
+  {words:["If","it","is","sunny","this","weekend,","I","will","go","to","the","beach"],ru:"Если на выходных будет солнечно, я пойду на пляж"},
+  {words:["If","she","gets","the","scholarship,","she","will","study","abroad"],ru:"Если она получит стипендию, будет учиться за рубежом"},
+  {words:["If","you","drink","coffee","now,","you","won't","sleep","tonight"],ru:"Если выпьешь кофе сейчас, не уснёшь сегодня ночью"},
+  {words:["If","I","lose","my","job,","I","will","look","for","a","new","one"],ru:"Если потеряю работу, найду новую"},
+  {words:["If","we","don't","act","now,","the","situation","will","get","worse"],ru:"Если не действовать сейчас, ситуация ухудшится"},
+  {words:["If","he","doesn't","call","soon,","I","will","send","him","a","message"],ru:"Если он скоро не позвонит, я отправлю ему сообщение"},
+  {words:["If","you","keep","practising,","you","will","master","the","skill"],ru:"Если продолжишь тренироваться, освоишь навык"},
+  {words:["If","the","boss","approves","the","plan,","we","will","start","next","week"],ru:"Если начальник одобрит план, начнём на следующей неделе"},
+  {words:["If","I","don't","eat","soon,","I","will","have","a","headache"],ru:"Если скоро не поем, заболит голова"},
+  {words:["If","she","moves","to","a","bigger","city,","she","will","find","more","opportunities"],ru:"Если она переедет в крупный город, найдёт больше возможностей"},
+  {words:["If","you","invest","wisely,","you","will","make","a","profit"],ru:"Если инвестировать мудро, получишь прибыль"},
+  {words:["If","I","get","a","good","night's","sleep,","I","will","feel","great","tomorrow"],ru:"Если хорошо высплюсь, завтра буду отлично себя чувствовать"},
+  {words:["If","he","keeps","lying,","he","will","lose","everyone's","trust"],ru:"Если он продолжит лгать, потеряет доверие всех"},
+  {words:["If","you","exercise","regularly,","you","will","live","longer"],ru:"Если регулярно заниматься спортом, проживёшь дольше"},
+  {words:["If","we","order","now,","the","food","will","arrive","in","thirty","minutes"],ru:"Если закажем сейчас, еда приедет через тридцать минут"},
+  {words:["If","I","study","tonight,","I","will","be","ready","for","the","test"],ru:"Если буду учиться сегодня вечером, буду готов к тесту"},
+  {words:["If","you","don't","follow","the","instructions,","you","will","make","mistakes"],ru:"Если не следовать инструкциям, будешь делать ошибки"},
+  {words:["If","she","applies","early,","she","will","have","a","better","chance"],ru:"Если она подаст заявку рано, шансы будут лучше"},
+  {words:["If","the","traffic","is","bad,","I","will","be","late"],ru:"Если будут пробки, я опоздаю"},
+  {words:["If","you","read","the","contract","carefully,","you","will","avoid","problems"],ru:"Если внимательно прочитать контракт, можно избежать проблем"},
+  {words:["If","I","get","tickets,","I","will","invite","you"],ru:"Если достану билеты, приглашу тебя"},
+  {words:["If","he","doesn't","rest,","he","will","get","sick"],ru:"Если он не отдохнёт, заболеет"},
+  {words:["If","you","clean","the","house","now,","you","will","enjoy","the","weekend"],ru:"Если уберёшь сейчас, насладишься выходными"},
+  {words:["If","she","takes","this","course,","she","will","learn","a","lot"],ru:"Если она пройдёт этот курс, многому научится"},
+  {words:["If","I","win","the","contest,","I","will","get","a","prize"],ru:"Если выиграю конкурс, получу приз"},
+  {words:["If","you","don't","apologise,","she","will","stay","angry"],ru:"Если не извинишься, она останется злой"},
+  {words:["If","we","plant","trees,","the","air","will","be","cleaner"],ru:"Если посадим деревья, воздух станет чище"},
+  {words:["If","he","arrives","early,","he","will","get","a","good","seat"],ru:"Если он придёт рано, займёт хорошее место"},
+  {words:["If","you","set","clear","goals,","you","will","achieve","more"],ru:"Если ставить чёткие цели, достигнешь большего"},
+  {words:["If","it","gets","dark","before","we","leave,","we","will","need","a","torch"],ru:"Если стемнеет до нашего ухода, нам понадобится фонарик"},
+  {words:["If","I","submit","the","application","today,","they","will","process","it","faster"],ru:"Если подам заявку сегодня, её обработают быстрее"},
+  {words:["If","she","joins","the","team,","our","results","will","improve"],ru:"Если она вступит в команду, наши результаты улучшатся"},
+  {words:["If","you","make","a","list,","you","won't","forget","anything"],ru:"Если составишь список, ничего не забудешь"},
+  {words:["If","he","takes","the","shortcut,","he","will","save","ten","minutes"],ru:"Если он пойдёт коротким путём, сэкономит десять минут"},
+  {words:["If","I","don't","fix","this","bug,","the","app","will","crash"],ru:"Если не исправлю этот баг, приложение упадёт"},
+  {words:["If","you","take","an","umbrella,","you","won't","get","wet"],ru:"Если возьмёшь зонт, не промокнешь"},
+  {words:["If","we","recycle","more,","we","will","produce","less","waste"],ru:"Если больше перерабатывать, будем производить меньше отходов"},
+  {words:["If","she","wakes","up","on","time,","she","won't","miss","the","flight"],ru:"Если она проснётся вовремя, не пропустит рейс"},
+  {words:["If","I","pass","this","level,","I","will","unlock","the","next","one"],ru:"Если пройду этот уровень, разблокирую следующий"},
+  {words:["If","you","don't","back","up","your","files,","you","will","lose","them"],ru:"Если не сделать резервную копию, файлы потеряются"},
+  {words:["If","he","keeps","eating","vegetables,","his","health","will","improve"],ru:"Если он продолжит есть овощи, его здоровье улучшится"},
+  {words:["If","the","store","is","closed,","we","will","order","online"],ru:"Если магазин закрыт, закажем онлайн"},
+  {words:["If","I","learn","to","cook,","I","will","stop","ordering","takeaway"],ru:"Если научусь готовить, перестану заказывать еду"},
+  {words:["If","you","ask","nicely,","I","will","lend","you","my","car"],ru:"Если попросишь вежливо, одолжу тебе машину"},
+  {words:["If","she","doesn't","hurry,","she","will","miss","the","train"],ru:"Если она не поторопится, опоздает на поезд"},
+  {words:["If","I","get","this","promotion,","I","will","celebrate"],ru:"Если получу это повышение, буду отмечать"},
+  {words:["If","you","respect","others,","they","will","respect","you","back"],ru:"Если уважать других, они уважают в ответ"},
+  {words:["If","it","snows","tonight,","the","roads","will","be","icy"],ru:"Если ночью выпадет снег, дороги будут обледеневшими"},
+  {words:["If","he","reviews","his","notes,","he","will","remember","more"],ru:"Если он повторит записи, запомнит больше"},
+  {words:["If","we","don't","hurry,","the","restaurant","will","close"],ru:"Если не поторопимся, ресторан закроется"},
+  {words:["If","you","call","ahead,","they","will","prepare","your","order"],ru:"Если позвонишь заранее, они подготовят твой заказ"},
+  {words:["If","I","finish","the","report","today,","I","will","have","a","free","weekend"],ru:"Если закончу отчёт сегодня, выходные будут свободными"},
+  {words:["If","you","miss","this","sale,","you","will","pay","full","price"],ru:"Если пропустишь эту распродажу, заплатишь полную цену"},
+  {words:["If","she","practises","her","presentation,","she","will","feel","more","confident"],ru:"Если она порепетирует презентацию, почувствует себя увереннее"},
+  {words:["If","he","quits","now,","he","will","regret","it"],ru:"Если он уйдёт сейчас, пожалеет об этом"},
+  {words:["If","I","get","a","good","mark,","my","parents","will","be","pleased"],ru:"Если получу хорошую оценку, родители будут довольны"},
+  {words:["If","you","ask","for","feedback,","you","will","improve","faster"],ru:"Если просить отзыв, будешь прогрессировать быстрее"}
+];
+
+let queue = [], current = null, answer = [], correct = 0, total = 0;
+let checked = false, shuffledWords = [];
+
+function strip(w) { return w.replace(/,+$/, ''); }
+function display(w) {
+  const s = strip(w);
+  return s === 'I' ? s : s.toLowerCase();
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function restart() {
+  queue = shuffle(sentences);
+  correct = 0; total = 0;
+  document.getElementById('finish').classList.remove('show');
+  document.getElementById('game').style.display = '';
+  updateScore();
+  nextQuestion();
+}
+function nextQuestion() {
+  if (queue.length === 0) { showFinish(); return; }
+  current = queue.shift();
+  answer = [];
+  checked = false;
+  const sa = document.getElementById('sentence-area');
+  sa.className = 'sentence-area';
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('btn-check').textContent = 'Check ✓';
+  document.getElementById('btn-check').onclick = check;
+  document.getElementById('task-ru').textContent = current.ru;
+  shuffledWords = shuffle(current.words.map((w, i) => ({ w, id: i })));
+  renderBank(shuffledWords);
+  renderAnswer();
+  updateProgress();
+}
+function renderBank(items) {
+  const bank = document.getElementById('word-bank');
+  bank.innerHTML = '';
+  items.forEach(item => {
+    if (answer.find(a => a.id === item.id)) return;
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = display(item.w);
+    chip.onclick = () => pickWord(item);
+    bank.appendChild(chip);
+  });
+}
+function renderAnswer() {
+  const sa = document.getElementById('sentence-area');
+  const ph = document.getElementById('placeholder');
+  sa.querySelectorAll('.chip').forEach(c => c.remove());
+  if (answer.length === 0) { ph.style.display = ''; }
+  else {
+    ph.style.display = 'none';
+    answer.forEach(item => {
+      const chip = document.createElement('div');
+      chip.className = 'chip in-answer';
+      chip.textContent = display(item.w);
+      chip.onclick = () => removeWord(item);
+      sa.appendChild(chip);
+    });
+  }
+}
+function pickWord(item) {
+  if (checked) return;
+  answer.push(item);
+  renderAnswer();
+  renderBank(shuffledWords);
+}
+function removeWord(item) {
+  if (checked) return;
+  answer = answer.filter(a => a.id !== item.id);
+  renderAnswer();
+  renderBank(shuffledWords);
+}
+function check() {
+  if (answer.length === 0) return;
+  checked = true; total++;
+  const userSentence = answer.map(a => strip(a.w)).join(' ');
+  const correctSentence = current.words.map(strip).join(' ');
+  const isCorrect = userSentence === correctSentence;
+  if (isCorrect) correct++;
+  const sa = document.getElementById('sentence-area');
+  sa.classList.add(isCorrect ? 'correct' : 'wrong');
+  const fb = document.getElementById('feedback');
+  if (isCorrect) { fb.innerHTML = `<div class="correct-label">✓ Correct!</div>`; }
+  else { fb.innerHTML = `<div class="wrong-label">✗ Not quite</div><div class="answer">${current.words.map(strip).join(' ')}</div>`; }
+  updateScore();
+  const btn = document.getElementById('btn-check');
+  btn.textContent = 'Next →'; btn.onclick = nextQuestion;
+}
+function skip() {
+  if (checked) { nextQuestion(); return; }
+  total++; checked = true;
+  const sa = document.getElementById('sentence-area');
+  sa.classList.add('wrong');
+  document.getElementById('feedback').innerHTML = `<div class="wrong-label">Skipped</div><div class="answer">${current.words.map(strip).join(' ')}</div>`;
+  updateScore();
+  const btn = document.getElementById('btn-check');
+  btn.textContent = 'Next →'; btn.onclick = nextQuestion;
+}
+function updateScore() { document.getElementById('score').textContent = `${correct} / ${total}`; }
+function updateProgress() {
+  const done = sentences.length - queue.length - 1;
+  const pct = Math.max(0, (done / sentences.length) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+function showRule() { document.getElementById('modal').classList.add('show'); }
+function hideRule() { document.getElementById('modal').classList.remove('show'); }
+function showFinish() {
+  document.getElementById('game').style.display = 'none';
+  const f = document.getElementById('finish');
+  f.classList.add('show');
+  document.getElementById('final-score').innerHTML = `You got <strong style="color:#7b68ee">${correct}</strong> out of <strong>${total}</strong> correct.`;
+  document.getElementById('progress-bar').style.width = '100%';
+}
+restart();
+</script>
+</body>
+</html>
