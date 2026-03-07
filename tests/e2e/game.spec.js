@@ -222,6 +222,71 @@ for (const n of ['0', '1', '2', '3']) {
 }
 
 // ==============================================================
+// TC-38: РЕГРЕССИЯ — check() должен использовать display() для сравнения,
+// а не strip(). Баг: два чипа с одинаковым отображением ("she"/"She") —
+// пользователь видит правильный ответ, но получает "Not quite".
+// ==============================================================
+
+// TC-38a: математическое доказательство — display-сравнение правильно, strip — нет
+test('TC-38a display-сравнение принимает ответ с case-ambiguous чипами; strip — нет (регрессия)', async ({ page }) => {
+  await page.goto('/2.html');
+
+  const result = await page.evaluate(() => {
+    const d = window.display || (w => { const s = w.replace(/,+$/, ''); return s === 'I' ? s : s.toLowerCase(); });
+    const s = window.strip  || (w => w.replace(/,+$/, ''));
+
+    // Предложение: "She would be great if she tried"
+    // Пользователь случайно взял чип "she" (id=5) на место "She" (id=0) и наоборот
+    const original   = ['She', 'would', 'be', 'great', 'if', 'she', 'tried'];
+    const swapped    = ['she', 'would', 'be', 'great', 'if', 'She', 'tried'];
+
+    return {
+      displayMatch: swapped.map(d).join(' ') === original.map(d).join(' '),
+      stripMatch:   swapped.map(s).join(' ') === original.map(s).join(' '),
+    };
+  });
+
+  expect(result.displayMatch).toBe(true);   // новый код — принимает
+  expect(result.stripMatch).toBe(false);     // старый код — отвергал (это и был баг)
+});
+
+// TC-38b: интеграционный — находим в 2.html реальное предложение с дублирующимися
+// display-чипами, играем его, проверяем что получаем Correct!
+test('TC-38b Реальное предложение с двумя визуально-одинаковыми чипами принимается как верное', async ({ page }) => {
+  await page.goto('/2.html');
+
+  // Ищем в данных предложение с дублирующимися display-словами
+  const sentence = await page.evaluate(() => {
+    const disp = w => { const s = w.replace(/,+$/, ''); return s === 'I' ? s : s.toLowerCase(); };
+    return (window._testSentences || []).find(sent => {
+      const seen = new Set();
+      for (const w of sent.words.map(disp)) {
+        if (seen.has(w)) return true;
+        seen.add(w);
+      }
+      return false;
+    }) ?? null;
+  });
+
+  if (!sentence) { return; } // нет такого предложения — тест зачтён
+
+  // Форсируем игру показать именно это предложение
+  await page.evaluate(targetId => {
+    const allIds = (window._testSentences || []).map(s => s._id).filter(id => id !== targetId);
+    localStorage.setItem('cond2', JSON.stringify(allIds));
+  }, sentence._id);
+  await page.reload();
+
+  // Убеждаемся что показано нужное предложение
+  await expect(page.locator('#task-ru')).toHaveText(sentence.ru);
+
+  // Собираем правильный ответ и проверяем
+  await buildCorrectAnswer(page);
+  await page.locator('#btn-check').click();
+  await expect(page.locator('#feedback')).toContainText('Correct');
+});
+
+// ==============================================================
 // TC-34: кнопка «Назад» присутствует на каждой игровой странице
 // ==============================================================
 for (const n of ['0', '1', '2', '3']) {

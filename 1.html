@@ -462,8 +462,8 @@ function removeWord(item) {
 function check() {
   if (answer.length === 0) return;
   checked = true; total++;
-  const userSentence = answer.map(a => strip(a.w)).join(' ');
-  const correctSentence = current.words.map(strip).join(' ');
+  const userSentence = answer.map(a => display(a.w)).join(' ');
+  const correctSentence = current.words.map(display).join(' ');
   const isCorrect = userSentence === correctSentence;
   if (isCorrect) { correct++; done.add(current._id); saveProgress(); }
   const sa = document.getElementById('sentence-area');
