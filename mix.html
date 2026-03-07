@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Mix — All Conditionals</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f14; color: #f0f0f0;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 14px 16px 40px;
+    }
+    .top-bar { width: 100%; max-width: 480px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .top-bar h1 { font-size: 15px; color: #666; text-transform: uppercase; letter-spacing: 1.5px; text-align: center; }
+    .btn-back { background: none; border: 1.5px solid #1a3a6c; color: #4a9eff; border-radius: 20px; padding: 8px 14px; font-size: 15px; cursor: pointer; text-decoration: none; line-height: 1; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .top-bar-spacer { width: 80px; }
+    .progress-bar-wrap { width: 100%; max-width: 480px; background: #1e1e2a; border-radius: 6px; height: 6px; margin-bottom: 6px; }
+    .progress-bar { height: 6px; background: #4a9eff; border-radius: 6px; transition: width 0.4s ease; }
+    .progress-info { width: 100%; max-width: 480px; font-size: 14px; color: #555; margin-bottom: 14px; }
+    .progress-info .done-count { color: #4caf82; font-weight: 600; }
+    .progress-info .done-all { color: #4caf82; font-weight: 600; }
+    .task-card { width: 100%; max-width: 480px; background: #0f1a2e; border: 1.5px solid #1a3a6c; border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; }
+    .task-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .task-ru { font-size: 22px; color: #e0e0ff; line-height: 1.5; font-weight: 500; }
+    .sentence-area { width: 100%; max-width: 480px; min-height: 70px; background: #1a1a24; border: 2px solid #2e2e44; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; transition: border-color 0.3s; }
+    .sentence-area.correct { border-color: #4caf82; }
+    .sentence-area.wrong   { border-color: #e05c5c; }
+    .placeholder { color: #444; font-size: 16px; font-style: italic; }
+    .chip { background: #1a2a3e; border: 1.5px solid #1a3a6c; color: #d0e8ff; border-radius: 22px; padding: 11px 18px; font-size: 19px; cursor: pointer; user-select: none; transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .chip:active { transform: scale(0.95); }
+    .chip.in-answer { background: #1e3050; border-color: #4a9eff; color: #b0d8ff; }
+    .bank-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; align-self: flex-start; max-width: 480px; width: 100%; }
+    .word-bank { width: 100%; max-width: 480px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; min-height: 50px; }
+    .btn-row { display: flex; gap: 12px; width: 100%; max-width: 480px; }
+    button { border: none; border-radius: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    button:active { transform: scale(0.97); }
+    .btn-row button { flex: 1; padding: 20px; font-size: 20px; }
+    #btn-check { background: #4a9eff; color: #fff; }
+    #btn-skip { background: #1e1e2a; color: #777; border: 1.5px solid #2e2e44; flex: 0 0 auto; padding: 20px 24px; }
+    .feedback { margin-top: 14px; width: 100%; max-width: 480px; font-size: 17px; line-height: 1.6; min-height: 50px; }
+    .feedback .correct-label { color: #4caf82; font-weight: 700; }
+    .feedback .wrong-label   { color: #e05c5c; font-weight: 700; }
+    .feedback .answer        { color: #9d9dff; margin-top: 4px; }
+    .feedback .source-badge  { display: inline-block; margin-top: 6px; font-size: 12px; color: #4a9eff; background: #0a1525; border: 1px solid #1a3a6c; border-radius: 8px; padding: 2px 8px; }
+    .finish { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-top: 40px; }
+    .finish.show { display: flex; }
+    .finish h2 { font-size: 30px; color: #4a9eff; }
+    .finish p  { font-size: 18px; color: #888; line-height: 1.6; }
+    .finish button { max-width: 260px; background: #4a9eff; color: #fff; font-size: 18px; padding: 18px; }
+  </style>
+</head>
+<body>
+<div class="top-bar">
+  <a href="index.html" class="btn-back">‹ Назад</a>
+  <h1>Mix Mode</h1>
+  <div class="top-bar-spacer"></div>
+</div>
+<div class="progress-bar-wrap">
+  <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+</div>
+<div class="progress-info" id="progress-info">792 предложений</div>
+<div id="game">
+  <div class="task-card">
+    <div class="task-label">Переведи на английский</div>
+    <div class="task-ru" id="task-ru">...</div>
+  </div>
+  <div class="sentence-area" id="sentence-area">
+    <span class="placeholder" id="placeholder">Tap words to build the sentence</span>
+  </div>
+  <div class="bank-label">Слова</div>
+  <div class="word-bank" id="word-bank"></div>
+  <div class="btn-row">
+    <button id="btn-skip" onclick="skip()">Skip</button>
+    <button id="btn-check" onclick="check()">Check ✓</button>
+  </div>
+  <div class="feedback" id="feedback"></div>
+</div>
+<div class="finish" id="finish">
+  <h2>🎉 Готово!</h2>
+  <p id="final-score"></p>
+  <button onclick="restart()">Продолжить</button>
+  <button onclick="resetProgress()" style="background:#1e1e2a;color:#777;border:1.5px solid #2e2e44;margin-top:4px;">Сначала</button>
+</div>
+<script src="sentences-data.js"></script>
+<script>
+// Build allSentences from shared data file, tagging each with _sourceKey and _id
+const allSentences = [];
+const SOURCE_KEYS = ['cond0', 'cond1', 'cond2', 'cond3'];
+for (const key of SOURCE_KEYS) {
+  const arr = window.sentencesData[key] || [];
+  arr.forEach((s, i) => {
+    allSentences.push({ words: s.words, ru: s.ru, _id: i, _sourceKey: key });
+  });
+}
+const TOTAL = allSentences.length; // 792
+
+// Per-source-key done sets — piggyback on the same localStorage keys as individual games
+const doneMap = { cond0: new Set(), cond1: new Set(), cond2: new Set(), cond3: new Set() };
+
+function loadProgress() {
+  for (const key of SOURCE_KEYS) {
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) doneMap[key] = new Set(JSON.parse(saved));
+    } catch(e) { doneMap[key] = new Set(); }
+  }
+}
+function saveProgress(sourceKey) {
+  localStorage.setItem(sourceKey, JSON.stringify([...doneMap[sourceKey]]));
+}
+function resetProgress() {
+  for (const key of SOURCE_KEYS) {
+    doneMap[key] = new Set();
+    localStorage.removeItem(key);
+  }
+  restart();
+}
+function totalDone() {
+  return SOURCE_KEYS.reduce((sum, key) => sum + doneMap[key].size, 0);
+}
+
+function strip(w) { return w.replace(/,+$/, ''); }
+function display(w) {
+  const s = strip(w);
+  return s === 'I' ? s : s.toLowerCase();
+}
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+let queue = [], current = null, answer = [], correct = 0, total = 0;
+let checked = false, shuffledWords = [];
+
+function restart() {
+  loadProgress();
+  const done = totalDone();
+  const remaining = allSentences.filter(s => !doneMap[s._sourceKey].has(s._id));
+  if (remaining.length === 0) {
+    document.getElementById('game').style.display = 'none';
+    const f = document.getElementById('finish');
+    f.classList.add('show');
+    document.getElementById('final-score').innerHTML = `🏆 Все <strong style="color:#4caf82">${TOTAL}</strong> предложений изучены!`;
+    document.getElementById('progress-bar').style.width = '100%';
+    return;
+  }
+  queue = shuffle(remaining);
+  correct = 0; total = 0;
+  document.getElementById('finish').classList.remove('show');
+  document.getElementById('game').style.display = '';
+  updateScore();
+  nextQuestion();
+}
+function nextQuestion() {
+  if (queue.length === 0) { showFinish(); return; }
+  current = queue.shift();
+  answer = [];
+  checked = false;
+  const sa = document.getElementById('sentence-area');
+  sa.className = 'sentence-area';
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('btn-check').textContent = 'Check ✓';
+  document.getElementById('btn-check').onclick = check;
+  document.getElementById('task-ru').textContent = current.ru;
+  shuffledWords = shuffle(current.words.map((w, i) => ({ w, id: i })));
+  renderBank(shuffledWords);
+  renderAnswer();
+  updateProgress();
+}
+function renderBank(items) {
+  const bank = document.getElementById('word-bank');
+  bank.innerHTML = '';
+  items.forEach(item => {
+    if (answer.find(a => a.id === item.id)) return;
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = display(item.w);
+    chip.onclick = () => pickWord(item);
+    bank.appendChild(chip);
+  });
+}
+function renderAnswer() {
+  const sa = document.getElementById('sentence-area');
+  const ph = document.getElementById('placeholder');
+  sa.querySelectorAll('.chip').forEach(c => c.remove());
+  if (answer.length === 0) { ph.style.display = ''; }
+  else {
+    ph.style.display = 'none';
+    answer.forEach(item => {
+      const chip = document.createElement('div');
+      chip.className = 'chip in-answer';
+      chip.textContent = display(item.w);
+      chip.onclick = () => removeWord(item);
+      sa.appendChild(chip);
+    });
+  }
+}
+function pickWord(item) {
+  if (checked) return;
+  answer.push(item);
+  renderAnswer();
+  renderBank(shuffledWords);
+}
+function removeWord(item) {
+  if (checked) return;
+  answer = answer.filter(a => a.id !== item.id);
+  renderAnswer();
+  renderBank(shuffledWords);
+}
+function check() {
+  if (answer.length === 0) return;
+  checked = true; total++;
+  const userSentence = answer.map(a => display(a.w)).join(' ');
+  const correctSentence = current.words.map(display).join(' ');
+  const isCorrect = userSentence === correctSentence;
+  if (isCorrect) {
+    doneMap[current._sourceKey].add(current._id);
+    saveProgress(current._sourceKey);
+    correct++;
+  }
+  const sa = document.getElementById('sentence-area');
+  sa.classList.add(isCorrect ? 'correct' : 'wrong');
+  const fb = document.getElementById('feedback');
+  const sourceLabel = { cond0: 'Zero', cond1: 'First', cond2: 'Second', cond3: 'Third' }[current._sourceKey];
+  if (isCorrect) {
+    fb.innerHTML = `<div class="correct-label">✓ Correct!</div><span class="source-badge">${sourceLabel} Conditional</span>`;
+  } else {
+    fb.innerHTML = `<div class="wrong-label">✗ Not quite</div><div class="answer">${current.words.map(strip).join(' ')}</div><span class="source-badge">${sourceLabel} Conditional</span>`;
+  }
+  updateScore();
+  const btn = document.getElementById('btn-check');
+  btn.textContent = 'Next →'; btn.onclick = nextQuestion;
+}
+function skip() {
+  if (checked) { nextQuestion(); return; }
+  total++; checked = true;
+  const sa = document.getElementById('sentence-area');
+  sa.classList.add('wrong');
+  const sourceLabel = { cond0: 'Zero', cond1: 'First', cond2: 'Second', cond3: 'Third' }[current._sourceKey];
+  document.getElementById('feedback').innerHTML = `<div class="wrong-label">Skipped</div><div class="answer">${current.words.map(strip).join(' ')}</div><span class="source-badge">${sourceLabel} Conditional</span>`;
+  updateScore();
+  const btn = document.getElementById('btn-check');
+  btn.textContent = 'Next →'; btn.onclick = nextQuestion;
+}
+function updateScore() {
+  const info = document.getElementById('progress-info');
+  const done = totalDone();
+  const remaining = TOTAL - done;
+  if (done === 0) {
+    info.textContent = `${TOTAL} предложений`;
+  } else if (done === TOTAL) {
+    info.innerHTML = `<span class="done-all">✓ Все ${TOTAL} изучены!</span>`;
+  } else {
+    info.innerHTML = `<span class="done-count">${done}</span> / ${TOTAL} изучено &nbsp;·&nbsp; осталось ${remaining}`;
+  }
+}
+function updateProgress() {
+  const pct = (totalDone() / TOTAL) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+function showFinish() {
+  document.getElementById('game').style.display = 'none';
+  const f = document.getElementById('finish');
+  f.classList.add('show');
+  const done = totalDone();
+  document.getElementById('final-score').innerHTML =
+    `Сессия: <strong style="color:#4a9eff">${correct}</strong> / ${total} правильно.<br>Изучено всего: <strong style="color:#4caf82">${done}</strong> / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = (done / TOTAL * 100) + '%';
+}
+
+loadProgress();
+restart();
+
+// Test hooks (только для автотестов)
+window._testSentences = allSentences;
+Object.defineProperty(window, '_testCurrent', { get: () => current, configurable: true });
+window.resetProgress = resetProgress;
+</script>
+</body>
+</html>

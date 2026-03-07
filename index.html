@@ -28,6 +28,16 @@
     .card-count { font-size: 13px; color: #555; margin-left: 60px; }
     .card-count span { color: #4caf82; font-weight: 600; }
     .arrow { position: absolute; right: 22px; top: 50%; transform: translateY(-50%); font-size: 22px; color: #3d3d5c; }
+    .mix-divider { width: 100%; max-width: 480px; display: flex; align-items: center; gap: 12px; margin: 6px 0 2px; }
+    .mix-divider-line { flex: 1; height: 1px; background: #1a3a6c; }
+    .mix-divider-text { font-size: 12px; color: #2a5a9c; text-transform: uppercase; letter-spacing: 1.5px; white-space: nowrap; }
+    .card-mix { border-color: #1a3a6c; background: #0a1525; }
+    .card-mix:active { background: #0f1f35; border-color: #4a9eff; }
+    .card-mix .badge { background: #071020; border-color: #1a3a6c; color: #4a9eff; font-size: 20px; }
+    .card-mix .card-title { color: #d0e8ff; }
+    .card-mix .card-formula { color: #4a9eff; }
+    .card-mix .card-progress-bar { background: #4a9eff; }
+    .card-mix .arrow { color: #1a3a6c; }
   </style>
 </head>
 <body>
@@ -92,8 +102,31 @@
     </a>
   </div>
 
+  <div class="mix-divider">
+    <div class="mix-divider-line"></div>
+    <div class="mix-divider-text">или всё сразу</div>
+    <div class="mix-divider-line"></div>
+  </div>
+
+  <div class="cards">
+    <a class="card card-mix" href="mix.html">
+      <div class="card-top">
+        <div class="badge">∞</div>
+        <div>
+          <div class="card-title">Mix — All Conditionals</div>
+          <div class="card-formula">0 + 1 + 2 + 3 conditionals</div>
+        </div>
+      </div>
+      <div class="card-desc" style="margin-left:60px">Все типы вперемешку. Прогресс учитывается в каждом уровне.</div>
+      <div class="card-progress-wrap" style="margin-left:60px;margin-top:10px;margin-bottom:4px;margin-right:36px;background:#071020"><div class="card-progress-bar card-mix" id="pbmix" style="width:0%;background:#4a9eff"></div></div>
+      <div class="card-count" style="margin-left:60px" id="ccmix">792 предложения</div>
+      <span class="arrow">›</span>
+    </a>
+  </div>
+
   <script>
     const totals = { cond0: 196, cond1: 196, cond2: 203, cond3: 197 };
+    const MIX_TOTAL = 792;
     function renderProgress() {
       [0, 1, 2, 3].forEach(n => {
         const key = 'cond' + n;
@@ -116,6 +149,25 @@
           cc.innerHTML = `<span>${done}</span> / ${total} изучено &nbsp;·&nbsp; осталось ${total - done}`;
         }
       });
+      // Mix card — сумма по всем 4 ключам
+      let mixDone = 0;
+      for (let n = 0; n <= 3; n++) {
+        try {
+          const saved = localStorage.getItem('cond' + n);
+          if (saved) mixDone += JSON.parse(saved).length;
+        } catch(e) {}
+      }
+      const mixPct = MIX_TOTAL > 0 ? (mixDone / MIX_TOTAL * 100) : 0;
+      const pbmix = document.getElementById('pbmix');
+      const ccmix = document.getElementById('ccmix');
+      pbmix.style.width = mixPct + '%';
+      if (mixDone === 0) {
+        ccmix.textContent = MIX_TOTAL + ' предложения';
+      } else if (mixDone === MIX_TOTAL) {
+        ccmix.innerHTML = `<span style="color:#4caf82;font-weight:600">✓ Все ${MIX_TOTAL} изучены!</span>`;
+      } else {
+        ccmix.innerHTML = `<span style="color:#4a9eff;font-weight:600">${mixDone}</span> / ${MIX_TOTAL} изучено &nbsp;·&nbsp; осталось ${MIX_TOTAL - mixDone}`;
+      }
     }
     renderProgress();
     // Перерисовываем при возврате из bfcache (кнопка «Назад» на мобильном)

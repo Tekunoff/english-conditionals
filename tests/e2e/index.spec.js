@@ -11,18 +11,18 @@ test('TC-01 Страница меню загружается', async ({ page }) 
   await expect(page.locator('h1')).toContainText('English Practice');
 });
 
-// TC-02: все 4 карточки присутствуют
-test('TC-02 На меню видно 4 карточки с условными предложениями', async ({ page }) => {
+// TC-02: 4 обычных карточки + 1 Mix карточка
+test('TC-02 На меню видно 5 карточек (4 условных + Mix)', async ({ page }) => {
   await page.goto('/');
   const cards = page.locator('.card');
-  await expect(cards).toHaveCount(4);
+  await expect(cards).toHaveCount(5);
 });
 
 // TC-03: карточки ведут на правильные файлы
-test('TC-03 Ссылки карточек ведут на 0-3.html', async ({ page }) => {
+test('TC-03 Ссылки карточек ведут на 0-3.html и mix.html', async ({ page }) => {
   await page.goto('/');
   const hrefs = await page.locator('.card').evaluateAll(els => els.map(e => e.getAttribute('href')));
-  expect(hrefs).toEqual(['0.html', '1.html', '2.html', '3.html']);
+  expect(hrefs).toEqual(['0.html', '1.html', '2.html', '3.html', 'mix.html']);
 });
 
 // TC-04: без localStorage — каждая карточка показывает реальное число предложений
