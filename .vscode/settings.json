@@ -1,0 +1,36 @@
+{
+  "github.copilot.chat.codeGeneration.instructions": [
+    { "file": ".github/instructions/security.instructions.md" },
+    { "file": ".github/instructions/ux-confirmations.instructions.md" }
+  ],
+  "github.copilot.chat.reviewSelection.instructions": [
+    { "file": ".github/instructions/security.instructions.md" },
+    { "file": ".github/instructions/ux-confirmations.instructions.md" }
+  ],
+  "github.copilot.chat.testGeneration.instructions": [
+    { "file": ".github/instructions/security.instructions.md" },
+    { "file": ".github/instructions/ux-confirmations.instructions.md" }
+  ],
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    { "file": ".github/instructions/security.instructions.md" },
+    { "file": ".github/instructions/ux-confirmations.instructions.md" }
+  ],
+  "chat.tools.terminal.autoApprove": {
+    "/^python3 gmail_filters\\.py 2>/dev/null; echo \"EXIT: \\$\\?\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^cd /Users/tekunovnikolay/NikRepo/gmail-cleaner && python3 gmail_filters\\.py 2>/dev/null; echo \"EXIT: \\$\\?\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^python3 archive_existing\\.py 2>/dev/null; echo \"EXIT: \\$\\?\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "/^python3 analyze_inbox\\.py 2>/dev/null; echo \"EXIT: \\$\\?\"$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
+}
