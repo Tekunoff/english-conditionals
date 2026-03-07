@@ -1,0 +1,14 @@
+// Single source of truth for app version.
+// Include before </body> on every page.
+(function () {
+  var VERSION = 'v1.1.0';
+  var el = document.createElement('div');
+  el.id = 'app-version';
+  el.textContent = VERSION;
+  el.style.cssText =
+    'position:fixed;bottom:10px;right:14px;' +
+    'font-size:11px;color:#2e2e46;' +
+    'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;' +
+    'user-select:none;pointer-events:none;z-index:9999;';
+  document.body.appendChild(el);
+})();
