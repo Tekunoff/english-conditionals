@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Verb Forms</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f14; color: #f0f0f0;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 24px 16px 40px;
+    }
+    h1 { font-size: 22px; color: #9d9dff; margin-bottom: 6px; text-align: center; }
+    .subtitle { font-size: 14px; color: #555; margin-bottom: 28px; text-align: center; }
+    .group-card {
+      width: 100%; max-width: 480px; background: #1a1a2e;
+      border: 1.5px solid #2e2e50; border-radius: 16px;
+      padding: 18px 20px; margin-bottom: 14px;
+      text-decoration: none; color: inherit;
+      display: block; cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .group-card:hover { border-color: #7b68ee; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .card-badge { font-size: 11px; color: #7b68ee; background: #1e1e3a; border-radius: 10px; padding: 2px 8px; font-weight: 600; }
+    .card-title { font-size: 17px; font-weight: 700; color: #e0e0ff; margin-bottom: 2px; }
+    .card-formula { font-size: 12px; color: #9d9dff; font-style: italic; margin-bottom: 10px; }
+    .card-desc { font-size: 13px; color: #888; line-height: 1.5; margin-bottom: 12px; }
+    .progress-bar-wrap { background: #1e1e2a; border-radius: 6px; height: 6px; }
+    .progress-bar { height: 6px; background: #7b68ee; border-radius: 6px; transition: width 0.4s ease; }
+    .progress-count { font-size: 12px; color: #555; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Verb Forms</h1>
+  <p class="subtitle">Герундий, инфинитив и bare infinitive</p>
+
+  <a href="gerund-only.html" class="group-card" id="card-gerundOnly">
+    <div class="card-header">
+      <span class="card-badge">Группа А</span>
+    </div>
+    <div class="card-title">Gerund Only</div>
+    <div class="card-formula">enjoy doing / avoid doing</div>
+    <div class="card-desc">Глаголы, требующие только герундия: enjoy, mind, avoid, finish, keep, suggest…</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="bar-gerundOnly" style="width:0%"></div></div>
+    <div class="progress-count" id="count-gerundOnly">0 / 0 изучено</div>
+  </a>
+
+  <a href="infinitive-only.html" class="group-card" id="card-infinitiveOnly">
+    <div class="card-header">
+      <span class="card-badge">Группа Б</span>
+    </div>
+    <div class="card-title">Infinitive Only</div>
+    <div class="card-formula">want to do / decide to do</div>
+    <div class="card-desc">Глаголы, требующие инфинитива: want, need, decide, hope, refuse, agree…</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="bar-infinitiveOnly" style="width:0%"></div></div>
+    <div class="progress-count" id="count-infinitiveOnly">0 / 0 изучено</div>
+  </a>
+
+  <a href="bare-infinitive.html" class="group-card" id="card-bareInfinitive">
+    <div class="card-header">
+      <span class="card-badge">Группа В</span>
+    </div>
+    <div class="card-title">Bare Infinitive</div>
+    <div class="card-formula">make him do / let her do</div>
+    <div class="card-desc">Глаголы, требующие bare infinitive: make, let, have, help, see, hear…</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="bar-bareInfinitive" style="width:0%"></div></div>
+    <div class="progress-count" id="count-bareInfinitive">0 / 0 изучено</div>
+  </a>
+
+  <a href="both-forms.html" class="group-card" id="card-bothForms">
+    <div class="card-header">
+      <span class="card-badge">Группа Г</span>
+    </div>
+    <div class="card-title">Both Forms — Different Meaning</div>
+    <div class="card-formula">stop doing vs stop to do</div>
+    <div class="card-desc">Глаголы с разным значением: stop, remember, forget, try, regret, go on…</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="bar-bothForms" style="width:0%"></div></div>
+    <div class="progress-count" id="count-bothForms">0 / 0 изучено</div>
+  </a>
+
+  <a href="mix.html" class="group-card" id="card-mix">
+    <div class="card-header">
+      <span class="card-badge">Mix</span>
+    </div>
+    <div class="card-title">Mix — All Forms</div>
+    <div class="card-formula">doing / to do / do — ?</div>
+    <div class="card-desc">Все четыре группы вперемешку. Угадай форму без подсказки.</div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="bar-mix" style="width:0%"></div></div>
+    <div class="progress-count" id="count-mix">0 / 0 изучено</div>
+  </a>
+
+  <script src="sentences-data.js"></script>
+  <script>
+    const GROUPS = [
+      { key: 'gerundOnly' },
+      { key: 'infinitiveOnly' },
+      { key: 'bareInfinitive' },
+      { key: 'bothForms' },
+    ];
+
+    function updateProgress() {
+      let mixDone = 0, mixTotal = 0;
+      GROUPS.forEach(({ key }) => {
+        const allSentences = window.sentencesData?.[key] || [];
+        const done = JSON.parse(localStorage.getItem(key) || '[]');
+        const total = allSentences.length;
+        const pct = total ? Math.round(done.length / total * 100) : 0;
+        document.getElementById('bar-' + key).style.width = pct + '%';
+        document.getElementById('count-' + key).textContent = done.length + ' / ' + total + ' изучено';
+        mixDone += done.length;
+        mixTotal += total;
+      });
+      const mixPct = mixTotal ? Math.round(mixDone / mixTotal * 100) : 0;
+      document.getElementById('bar-mix').style.width = mixPct + '%';
+      document.getElementById('count-mix').textContent = mixDone + ' / ' + mixTotal + ' изучено';
+    }
+
+    updateProgress();
+  </script>
+</body>
+</html>
