@@ -11,3 +11,8 @@ gmail-cleaner/credentials.json
 
 # Session files (may contain sensitive context)
 .github/sessions/
+
+# tg-bot local environments and branch worktrees
+tg-bot/.venv/
+tg-bot/branches/
+node_modules/
