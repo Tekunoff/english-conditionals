@@ -2,9 +2,144 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>Bare Infinitive</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f0f14; color: #f0f0f0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 14px 16px 40px; }
+    .top-bar { width: 100%; max-width: 480px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .top-bar h1 { font-size: 15px; color: #666; text-transform: uppercase; letter-spacing: 1.5px; text-align: center; }
+    .btn-back { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 8px 14px; font-size: 15px; cursor: pointer; text-decoration: none; line-height: 1; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .btn-rule { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 8px 14px; font-size: 15px; cursor: pointer; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .progress-bar-wrap { width: 100%; max-width: 480px; background: #1e1e2a; border-radius: 6px; height: 6px; margin-bottom: 6px; }
+    .progress-bar { height: 6px; background: #7b68ee; border-radius: 6px; transition: width 0.4s ease; }
+    .progress-info { width: 100%; max-width: 480px; font-size: 14px; color: #555; margin-bottom: 14px; }
+    .task-card { width: 100%; max-width: 480px; background: #1a1a2e; border: 1.5px solid #2e2e50; border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; }
+    .task-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .task-ru { font-size: 22px; color: #e0e0ff; line-height: 1.5; font-weight: 500; }
+    .form-choices { width: 100%; max-width: 480px; display: flex; gap: 10px; margin-bottom: 16px; }
+    .form-btn { flex: 1; padding: 18px 8px; font-size: 18px; font-weight: 700; border: 1.5px solid #3d3d5c; border-radius: 14px; background: #1a1a2e; color: #d0d0f0; cursor: pointer; transition: background 0.15s, border-color 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .form-btn:active { transform: scale(0.97); }
+    .form-btn.correct { border-color: #4caf82; background: #1a2e22; color: #4caf82; }
+    .form-btn.wrong   { border-color: #e05c5c; background: #2e1a1a; color: #e05c5c; }
+    .sentence-area { width: 100%; max-width: 480px; min-height: 70px; background: #1a1a24; border: 2px solid #2e2e44; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; transition: border-color 0.3s; }
+    .sentence-area.correct { border-color: #4caf82; }
+    .sentence-area.wrong   { border-color: #e05c5c; }
+    .placeholder { color: #444; font-size: 16px; font-style: italic; }
+    .chip { background: #2a2a3e; border: 1.5px solid #3d3d5c; color: #d0d0f0; border-radius: 22px; padding: 11px 18px; font-size: 19px; cursor: pointer; user-select: none; transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .chip:active { transform: scale(0.95); }
+    .chip.in-answer { background: #35355a; border-color: #7b68ee; color: #c8c8ff; }
+    .bank-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; align-self: flex-start; max-width: 480px; width: 100%; }
+    .word-bank { width: 100%; max-width: 480px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; min-height: 50px; }
+    .btn-row { display: flex; gap: 12px; width: 100%; max-width: 480px; }
+    button { border: none; border-radius: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    button:active { transform: scale(0.97); }
+    .btn-row button { flex: 1; padding: 20px; font-size: 20px; }
+    #btn-check { background: #7b68ee; color: #fff; }
+    #btn-skip  { background: #1e1e2a; color: #777; border: 1.5px solid #2e2e44; flex: 0 0 auto; padding: 20px 24px; }
+    .feedback { margin-top: 14px; width: 100%; max-width: 480px; font-size: 17px; line-height: 1.6; min-height: 50px; }
+    .feedback .correct-label { color: #4caf82; font-weight: 700; }
+    .feedback .wrong-label   { color: #e05c5c; font-weight: 700; }
+    .feedback .answer        { color: #9d9dff; margin-top: 4px; }
+    .note-box { margin-top: 10px; background: #1e1e3a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; font-size: 14px; color: #c8c8ff; display: none; }
+    .finish { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-top: 40px; }
+    .finish.show { display: flex; }
+    .finish h2 { font-size: 30px; color: #7b68ee; }
+    .finish button { max-width: 260px; background: #7b68ee; color: #fff; font-size: 18px; padding: 18px; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #1a1a2e; border: 1.5px solid #3d3d5c; border-radius: 18px; padding: 24px 22px; max-width: 460px; width: 100%; max-height: 85vh; overflow-y: auto; }
+    .modal h2 { font-size: 18px; color: #9d9dff; margin-bottom: 16px; }
+    .modal p { font-size: 14px; color: #aaa; line-height: 1.7; margin-bottom: 10px; }
+    .modal .example { background: #12122a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; color: #d0d0f0; line-height: 1.6; }
+    .modal-close { margin-top: 20px; width: 100%; background: #7b68ee; color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+  </style>
 </head>
 <body>
+
+<div class="top-bar">
+  <a href="index.html" class="btn-back">‹ Назад</a>
+  <h1>Bare Infinitive</h1>
+  <button class="btn-rule" onclick="showRule()">📖 Правило</button>
+</div>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+<div class="progress-info" id="progress-info">загрузка…</div>
+
+<div id="step1">
+  <div class="task-card">
+    <div class="task-label">Какая форма глагола?</div>
+    <div class="task-ru" id="task-ru">…</div>
+  </div>
+  <div class="form-choices">
+    <button class="form-btn" data-form="gerund"     onclick="chooseForm('gerund')">doing</button>
+    <button class="form-btn" data-form="infinitive" onclick="chooseForm('infinitive')">to do</button>
+    <button class="form-btn" data-form="bare"       onclick="chooseForm('bare')">do</button>
+  </div>
+</div>
+
+<div id="step2" style="display:none">
+  <div id="game">
+    <div class="task-card">
+      <div class="task-label">Переведи на английский</div>
+      <div class="task-ru" id="task-ru-2">…</div>
+    </div>
+    <div class="sentence-area" id="sentence-area">
+      <span class="placeholder" id="placeholder">Tap words to build the sentence</span>
+    </div>
+    <div class="bank-label">Слова</div>
+    <div class="word-bank" id="word-bank"></div>
+    <div class="btn-row">
+      <button id="btn-skip"  onclick="skip()">Skip</button>
+      <button id="btn-check" onclick="check()">Check ✓</button>
+    </div>
+    <div class="feedback" id="feedback"><div class="note-box" id="note-box"></div></div>
+  </div>
+</div>
+
+<div class="finish" id="finish">
+  <h2>🎉 Готово!</h2>
+  <p id="final-score"></p>
+  <button onclick="restart()">Продолжить</button>
+  <button onclick="resetProgress()" style="background:#1e1e2a;color:#777;border:1.5px solid #2e2e44;margin-top:4px;">Сначала</button>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Bare Infinitive — Правило</h2>
+    <p>После глаголов восприятия и каузативных конструкций часто нужен <strong style="color:#c8c8ff">bare infinitive</strong> (без <em>to</em>):</p>
+    <div class="example">make, let, have, help, see, hear, feel, watch, notice + do</div>
+    <div class="example">She made me <em style="color:#9d9dff">apologise</em>. I heard him <em style="color:#9d9dff">leave</em>.</div>
+    <button class="modal-close" onclick="hideRule()">Понятно ✓</button>
+  </div>
+</div>
+
+<script src="sentences-data.js"></script>
+<script>
+const DATA_KEY = 'bareInfinitive';
+const sentences = window.sentencesData[DATA_KEY];
+let done = JSON.parse(localStorage.getItem(DATA_KEY) || '[]');
+let queue = [], current = null, formChosen = false;
+function buildQueue() { const all = sentences.map((_,i)=>i); const notDone = all.filter(i=>!done.includes(i)); queue = notDone.length ? shuffle([...notDone]) : shuffle([...all]); }
+function shuffle(arr) { for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+function updateProgressBar() { const pct=sentences.length?Math.round(done.length/sentences.length*100):0; document.getElementById('progress-bar').style.width=pct+'%'; document.getElementById('progress-info').textContent=done.length+' / '+sentences.length+' изучено'; }
+function loadQuestion() { if(!queue.length)buildQueue(); const idx=queue.shift(); current={...sentences[idx],idx}; formChosen=false; document.getElementById('step1').style.display=''; document.getElementById('step2').style.display='none'; document.querySelectorAll('.form-btn').forEach(btn=>{btn.classList.remove('correct','wrong');btn.disabled=false;}); document.getElementById('task-ru').textContent=current.ru; }
+function chooseForm(form) { if(formChosen)return; const btns=document.querySelectorAll('.form-btn'); btns.forEach(btn=>btn.disabled=true); if(form===current.verbForm){formChosen=true;btns.forEach(btn=>{if(btn.dataset.form===form)btn.classList.add('correct');});setTimeout(goToStep2,600);}else{btns.forEach(btn=>{if(btn.dataset.form===form)btn.classList.add('wrong');if(btn.dataset.form===current.verbForm){btn.classList.add('correct');btn.disabled=false;}});} }
+function goToStep2() { document.getElementById('step1').style.display='none'; document.getElementById('step2').style.display=''; document.getElementById('task-ru-2').textContent=current.ru; document.getElementById('feedback').innerHTML='<div class="note-box" id="note-box"></div>'; document.getElementById('sentence-area').className='sentence-area'; document.getElementById('sentence-area').innerHTML='<span class="placeholder" id="placeholder">Tap words to build the sentence</span>'; renderBank(shuffle([...current.words])); document.getElementById('btn-check').textContent='Check ✓'; document.getElementById('btn-check').onclick=check; }
+function renderBank(words) { const bank=document.getElementById('word-bank'); bank.innerHTML=''; words.forEach(word=>{const chip=document.createElement('button');chip.className='chip';chip.textContent=word;chip.onclick=()=>moveToAnswer(chip);bank.appendChild(chip);}); }
+function moveToAnswer(chip) { chip.classList.add('in-answer'); const area=document.getElementById('sentence-area'); const ph=document.getElementById('placeholder'); if(ph)ph.remove(); area.appendChild(chip); chip.onclick=()=>moveToBank(chip); }
+function moveToBank(chip) { chip.classList.remove('in-answer'); document.getElementById('word-bank').appendChild(chip); chip.onclick=()=>moveToAnswer(chip); const area=document.getElementById('sentence-area'); if(!area.querySelector('.chip')){const ph=document.createElement('span');ph.className='placeholder';ph.id='placeholder';ph.textContent='Tap words to build the sentence';area.appendChild(ph);} }
+function check() { const answer=[...document.querySelectorAll('#sentence-area .chip')].map(c=>c.textContent); if(!answer.length)return; const area=document.getElementById('sentence-area'); const fb=document.getElementById('feedback'); if(JSON.stringify(answer)===JSON.stringify(current.words)){area.classList.add('correct');fb.innerHTML='<span class="correct-label">✓ Правильно!</span>';if(current.note){const nb=document.createElement('div');nb.className='note-box';nb.style.display='block';nb.textContent='💡 '+current.note;fb.appendChild(nb);}if(!done.includes(current.idx)){done.push(current.idx);localStorage.setItem(DATA_KEY,JSON.stringify(done));}updateProgressBar();document.getElementById('btn-check').textContent='Далее →';document.getElementById('btn-check').onclick=nextQuestion;if(done.length===sentences.length)setTimeout(showFinish,800);}else{area.classList.add('wrong');fb.innerHTML='<span class="wrong-label">✗ Неверно.</span><div class="answer">'+current.words.join(' ')+'</div>';} }
+function skip() { nextQuestion(); }
+function nextQuestion() { document.getElementById('btn-check').textContent='Check ✓'; document.getElementById('btn-check').onclick=check; loadQuestion(); }
+function showFinish() { document.getElementById('step1').style.display='none'; document.getElementById('step2').style.display='none'; document.getElementById('finish').classList.add('show'); document.getElementById('final-score').textContent='Все '+sentences.length+' предложений пройдено!'; }
+function restart() { document.getElementById('finish').classList.remove('show'); buildQueue(); loadQuestion(); }
+function resetProgress() { done=[]; localStorage.removeItem(DATA_KEY); updateProgressBar(); restart(); }
+function showRule() { document.getElementById('modal').classList.add('show'); }
+function hideRule() { document.getElementById('modal').classList.remove('show'); }
+buildQueue(); loadQuestion(); updateProgressBar();
+</script>
+
+<!-- ===== SOURCE DATA for gen_sentences_data.py (do not remove) ===== -->
 <script>
 // Source data for gen_sentences_data.py (do not remove this comment)
 const sentences = [
