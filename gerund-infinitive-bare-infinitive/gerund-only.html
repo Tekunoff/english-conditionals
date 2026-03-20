@@ -33,21 +33,13 @@
     .form-btn:active { transform: scale(0.97); }
     .form-btn.correct { border-color: #4caf82; background: #1a2e22; color: #4caf82; }
     .form-btn.wrong   { border-color: #e05c5c; background: #2e1a1a; color: #e05c5c; }
-    .sentence-area { width: 100%; max-width: 480px; min-height: 70px; background: #1a1a24; border: 2px solid #2e2e44; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; transition: border-color 0.3s; }
-    .sentence-area.correct { border-color: #4caf82; }
-    .sentence-area.wrong   { border-color: #e05c5c; }
-    .placeholder { color: #444; font-size: 16px; font-style: italic; }
-    .chip { background: #2a2a3e; border: 1.5px solid #3d3d5c; color: #d0d0f0; border-radius: 22px; padding: 11px 18px; font-size: 19px; cursor: pointer; user-select: none; transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
-    .chip:active { transform: scale(0.95); }
-    .chip.in-answer { background: #35355a; border-color: #7b68ee; color: #c8c8ff; }
-    .bank-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; align-self: flex-start; max-width: 480px; width: 100%; }
-    .word-bank { width: 100%; max-width: 480px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; min-height: 50px; }
+    .sentence-blank { width: 100%; max-width: 480px; background: #1a1a24; border: 2px solid #2e2e44; border-radius: 14px; padding: 14px 16px; font-size: 22px; line-height: 1.45; color: #e0e0ff; margin-bottom: 12px; }
+    .blank { color: #9d9dff; font-weight: 700; letter-spacing: 1px; }
     .btn-row { display: flex; gap: 12px; width: 100%; max-width: 480px; }
     button { border: none; border-radius: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
     button:active { transform: scale(0.97); }
     .btn-row button { flex: 1; padding: 20px; font-size: 20px; }
-    #btn-check { background: #7b68ee; color: #fff; }
-    #btn-skip  { background: #1e1e2a; color: #777; border: 1.5px solid #2e2e44; flex: 0 0 auto; padding: 20px 24px; }
+    #btn-next { background: #7b68ee; color: #fff; }
     .feedback { margin-top: 14px; width: 100%; max-width: 480px; font-size: 17px; line-height: 1.6; min-height: 50px; }
     .feedback .correct-label { color: #4caf82; font-weight: 700; }
     .feedback .wrong-label   { color: #e05c5c; font-weight: 700; }
@@ -81,7 +73,7 @@
 
 <div id="step1">
   <div class="task-card">
-    <div class="task-label">Какая форма глагола?</div>
+    <div class="task-label">Choose the correct verb form</div>
     <div class="task-ru" id="task-ru">…</div>
   </div>
   <div class="form-choices">
@@ -92,23 +84,13 @@
 </div>
 
 <div id="step2" style="display:none">
-  <div id="game">
-    <div class="task-card">
-      <div class="task-label">Переведи на английский</div>
-      <div class="task-ru" id="task-ru-2">…</div>
-    </div>
-    <div class="sentence-area" id="sentence-area">
-      <span class="placeholder" id="placeholder">Tap words to build the sentence</span>
-    </div>
-    <div class="bank-label">Слова</div>
-    <div class="word-bank" id="word-bank"></div>
-    <div class="btn-row">
-      <button id="btn-skip"  onclick="skip()">Skip</button>
-      <button id="btn-check" onclick="check()">Check ✓</button>
-    </div>
-    <div class="feedback" id="feedback">
-      <div class="note-box" id="note-box"></div>
-    </div>
+  <div class="task-card">
+    <div class="task-label">Correct answer</div>
+    <div class="task-ru" id="task-en-2">…</div>
+  </div>
+  <div class="feedback" id="feedback"></div>
+  <div class="btn-row">
+    <button id="btn-next" onclick="nextQuestion()">Далее →</button>
   </div>
 </div>
 
@@ -139,6 +121,12 @@ let queue = [];
 let current = null;
 let formChosen = false;
 
+const FORM_LABEL = {
+  gerund: 'doing',
+  infinitive: 'to do',
+  bare: 'do',
+};
+
 function buildQueue() {
   const all = sentences.map((_, i) => i);
   const notDone = all.filter(i => !done.includes(i));
@@ -163,6 +151,7 @@ function loadQuestion() {
   if (!queue.length) buildQueue();
   const idx = queue.shift();
   current = { ...sentences[idx], idx };
+  window.__currentQuestion = current;
   formChosen = false;
 
   document.getElementById('step1').style.display = '';
@@ -171,7 +160,36 @@ function loadQuestion() {
     btn.classList.remove('correct', 'wrong');
     btn.disabled = false;
   });
-  document.getElementById('task-ru').textContent = current.ru;
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('task-ru').innerHTML = buildSentenceTemplate(current);
+}
+
+function buildSentenceTemplate(item) {
+  const words = [...(item.words || [])];
+  const key = (item.keyVerb || '').trim().split(' ').filter(Boolean);
+  if (!key.length) return words.join(' ');
+
+  const lowerWords = words.map((w) => w.toLowerCase());
+  const lowerKey = key.map((w) => w.toLowerCase());
+  let start = -1;
+
+  for (let i = 0; i <= lowerWords.length - lowerKey.length; i++) {
+    let ok = true;
+    for (let j = 0; j < lowerKey.length; j++) {
+      if (lowerWords[i + j] !== lowerKey[j]) {
+        ok = false;
+        break;
+      }
+    }
+    if (ok) {
+      start = i;
+      break;
+    }
+  }
+
+  if (start === -1) return words.join(' ');
+  words.splice(start, lowerKey.length, '____');
+  return words.join(' ').replace('____', '<span class="blank">____</span>');
 }
 
 function chooseForm(form) {
@@ -182,7 +200,12 @@ function chooseForm(form) {
   if (form === current.verbForm) {
     formChosen = true;
     btns.forEach(btn => { if (btn.dataset.form === form) btn.classList.add('correct'); });
-    setTimeout(goToStep2, 600);
+    if (!done.includes(current.idx)) {
+      done.push(current.idx);
+      localStorage.setItem(DATA_KEY, JSON.stringify(done));
+    }
+    updateProgressBar();
+    setTimeout(goToStep2, 400);
   } else {
     btns.forEach(btn => {
       if (btn.dataset.form === form) btn.classList.add('wrong');
@@ -194,84 +217,12 @@ function chooseForm(form) {
 function goToStep2() {
   document.getElementById('step1').style.display = 'none';
   document.getElementById('step2').style.display = '';
-  document.getElementById('task-ru-2').textContent = current.ru;
-  document.getElementById('feedback').innerHTML = '<div class="note-box" id="note-box"></div>';
-  document.getElementById('sentence-area').className = 'sentence-area';
-  document.getElementById('sentence-area').innerHTML =
-    '<span class="placeholder" id="placeholder">Tap words to build the sentence</span>';
-  renderBank(shuffle([...current.words]));
-  document.getElementById('btn-check').textContent = 'Check ✓';
-  document.getElementById('btn-check').onclick = check;
+  document.getElementById('task-en-2').innerHTML = buildSentenceTemplate(current);
+  document.getElementById('feedback').innerHTML = '<span class="correct-label">✓ Правильно: ' + FORM_LABEL[current.verbForm] + '</span>';
+  if (done.length === sentences.length) setTimeout(showFinish, 500);
 }
-
-function renderBank(words) {
-  const bank = document.getElementById('word-bank');
-  bank.innerHTML = '';
-  words.forEach(word => {
-    const chip = document.createElement('button');
-    chip.className = 'chip';
-    chip.textContent = word;
-    chip.onclick = () => moveToAnswer(chip);
-    bank.appendChild(chip);
-  });
-}
-
-function moveToAnswer(chip) {
-  chip.classList.add('in-answer');
-  const area = document.getElementById('sentence-area');
-  const placeholder = document.getElementById('placeholder');
-  if (placeholder) placeholder.remove();
-  area.appendChild(chip);
-  chip.onclick = () => moveToBank(chip);
-}
-
-function moveToBank(chip) {
-  chip.classList.remove('in-answer');
-  document.getElementById('word-bank').appendChild(chip);
-  chip.onclick = () => moveToAnswer(chip);
-  const area = document.getElementById('sentence-area');
-  if (!area.querySelector('.chip')) {
-    const ph = document.createElement('span');
-    ph.className = 'placeholder'; ph.id = 'placeholder';
-    ph.textContent = 'Tap words to build the sentence';
-    area.appendChild(ph);
-  }
-}
-
-function check() {
-  const answer = [...document.querySelectorAll('#sentence-area .chip')].map(c => c.textContent);
-  if (!answer.length) return;
-  const area = document.getElementById('sentence-area');
-  const fb = document.getElementById('feedback');
-
-  if (JSON.stringify(answer) === JSON.stringify(current.words)) {
-    area.classList.add('correct');
-    fb.innerHTML = '<span class="correct-label">✓ Правильно!</span>';
-    if (current.note) {
-      const nb = document.createElement('div');
-      nb.className = 'note-box'; nb.style.display = 'block';
-      nb.textContent = '💡 ' + current.note;
-      fb.appendChild(nb);
-    }
-    if (!done.includes(current.idx)) {
-      done.push(current.idx);
-      localStorage.setItem(DATA_KEY, JSON.stringify(done));
-    }
-    updateProgressBar();
-    document.getElementById('btn-check').textContent = 'Далее →';
-    document.getElementById('btn-check').onclick = nextQuestion;
-    if (done.length === sentences.length) setTimeout(showFinish, 800);
-  } else {
-    area.classList.add('wrong');
-    fb.innerHTML = '<span class="wrong-label">✗ Неверно.</span><div class="answer">' + current.words.join(' ') + '</div>';
-  }
-}
-
-function skip() { nextQuestion(); }
 
 function nextQuestion() {
-  document.getElementById('btn-check').textContent = 'Check ✓';
-  document.getElementById('btn-check').onclick = check;
   loadQuestion();
 }
 
