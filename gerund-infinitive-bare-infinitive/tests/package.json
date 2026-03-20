@@ -1,0 +1,11 @@
+{
+  "name": "gerund-infinitive-bare-infinitive-tests",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "playwright test",
+    "test:report": "playwright show-report playwright-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}
