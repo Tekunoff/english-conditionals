@@ -18,6 +18,8 @@ def extract_sentences(filename):
     arr_text = re.sub(r'\n\s*\n', '\n', arr_text)
     # Quote all unquoted JS object keys: word: -> "word":
     arr_text = re.sub(r'(?<!["\w])([a-zA-Z_]\w*)\s*:', r'"\1":', arr_text)
+    # Remove trailing commas before ] or }
+    arr_text = re.sub(r',\s*([\]\}])', r'\1', arr_text)
     try:
         return json.loads(arr_text)
     except Exception as e:

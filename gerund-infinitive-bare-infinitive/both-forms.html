@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Both Forms</title>
+</head>
+<body>
+<script>
+// Source data for gen_sentences_data.py (do not remove this comment)
+const sentences = [
+  // STOP
+  {words:["I","stopped","smoking","last","year"],ru:"Я бросил курить в прошлом году",verbForm:"gerund",keyVerb:"smoking",note:"stop + gerund = перестать делать"},
+  {words:["She","stopped","to","buy","some","water"],ru:"Она остановилась, чтобы купить воды",verbForm:"infinitive",keyVerb:"to buy",note:"stop + infinitive = остановиться ради чего-то"},
+  {words:["He","stopped","running","when","he","heard","the","noise"],ru:"Он перестал бежать, когда услышал шум",verbForm:"gerund",keyVerb:"running",note:"stop + gerund = прекратить действие"},
+  {words:["They","stopped","to","look","at","the","view"],ru:"Они остановились, чтобы посмотреть на вид",verbForm:"infinitive",keyVerb:"to look",note:"stop + infinitive = сделать паузу ради чего-то"},
+  // REMEMBER
+  {words:["I","remember","meeting","her","for","the","first","time"],ru:"Я помню, как впервые встретил её",verbForm:"gerund",keyVerb:"meeting",note:"remember + gerund = помнить о том, что уже произошло"},
+  {words:["Remember","to","lock","the","door"],ru:"Не забудь закрыть дверь",verbForm:"infinitive",keyVerb:"to lock",note:"remember + infinitive = не забыть сделать в будущем"},
+  {words:["She","remembers","falling","off","her","bike","as","a","child"],ru:"Она помнит, как упала с велосипеда в детстве",verbForm:"gerund",keyVerb:"falling",note:"remember + gerund = воспоминание о прошлом"},
+  {words:["Did","you","remember","to","switch","off","the","oven?"],ru:"Ты не забыл выключить духовку?",verbForm:"infinitive",keyVerb:"to switch",note:"remember + infinitive = выполнить задачу"},
+  // FORGET
+  {words:["I'll","never","forget","seeing","the","northern","lights"],ru:"Я никогда не забуду, как видел северное сияние",verbForm:"gerund",keyVerb:"seeing",note:"forget + gerund = не забыть уже пережитое"},
+  {words:["Don't","forget","to","call","me","tonight"],ru:"Не забудь позвонить мне сегодня вечером",verbForm:"infinitive",keyVerb:"to call",note:"forget + infinitive = не забыть сделать"},
+  {words:["He","forgot","meeting","her","at","the","conference"],ru:"Он забыл, что встречался с ней на конференции",verbForm:"gerund",keyVerb:"meeting",note:"forget + gerund = забыть о прошлом"},
+  {words:["She","forgot","to","send","the","invoice"],ru:"Она забыла отправить счёт",verbForm:"infinitive",keyVerb:"to send",note:"forget + infinitive = забыть выполнить задачу"},
+  // TRY
+  {words:["Try","adding","a","little","salt","to","the","soup"],ru:"Попробуй добавить немного соли в суп",verbForm:"gerund",keyVerb:"adding",note:"try + gerund = попробовать как эксперимент"},
+  {words:["She","tried","to","open","the","window","but","it","was","stuck"],ru:"Она пыталась открыть окно, но оно застряло",verbForm:"infinitive",keyVerb:"to open",note:"try + infinitive = стараться, прилагать усилия"},
+  {words:["Have","you","tried","turning","it","off","and","on","again?"],ru:"Ты пробовал выключить и включить снова?",verbForm:"gerund",keyVerb:"turning",note:"try + gerund = попробовать в качестве решения"},
+  {words:["He","tried","to","lift","the","box","but","it","was","too","heavy"],ru:"Он пытался поднять коробку, но она была слишком тяжёлой",verbForm:"infinitive",keyVerb:"to lift",note:"try + infinitive = прилагать усилия к действию"},
+  // REGRET
+  {words:["I","regret","saying","those","words"],ru:"Я сожалею, что сказал те слова",verbForm:"gerund",keyVerb:"saying",note:"regret + gerund = сожалеть о прошлом"},
+  {words:["We","regret","to","inform","you","that","your","application","was","rejected"],ru:"Мы сожалеем, что должны сообщить вам об отказе",verbForm:"infinitive",keyVerb:"to inform",note:"regret + infinitive = с сожалением сообщать (формально)"},
+  {words:["She","regrets","not","taking","that","job"],ru:"Она сожалеет, что не взяла ту работу",verbForm:"gerund",keyVerb:"taking",note:"regret + gerund = сожаление о прошлом"},
+  {words:["We","regret","to","announce","the","cancellation","of","the","event"],ru:"Мы сожалеем о необходимости объявить об отмене мероприятия",verbForm:"infinitive",keyVerb:"to announce",note:"regret + infinitive = официальное сожаление"},
+  // GO ON
+  {words:["He","went","on","talking","for","another","hour"],ru:"Он продолжал говорить ещё час",verbForm:"gerund",keyVerb:"talking",note:"go on + gerund = продолжать то же самое"},
+  {words:["After","the","break","she","went","on","to","explain","the","next","topic"],ru:"После перерыва она перешла к объяснению следующей темы",verbForm:"infinitive",keyVerb:"to explain",note:"go on + infinitive = перейти к другому действию"},
+  {words:["She","went","on","crying","despite","our","efforts"],ru:"Она продолжала плакать, несмотря на наши усилия",verbForm:"gerund",keyVerb:"crying",note:"go on + gerund = продолжать то же"},
+  {words:["He","finished","his","introduction","and","went","on","to","present","his","results"],ru:"Он закончил введение и перешёл к представлению результатов",verbForm:"infinitive",keyVerb:"to present",note:"go on + infinitive = перейти к следующему этапу"},
+  // MEAN
+  {words:["Being","healthy","means","exercising","regularly"],ru:"Быть здоровым — значит регулярно заниматься",verbForm:"gerund",keyVerb:"exercising",note:"mean + gerund = означать (следствие)"},
+  {words:["I","didn't","mean","to","upset","you"],ru:"Я не хотел расстраивать тебя",verbForm:"infinitive",keyVerb:"to upset",note:"mean + infinitive = намереваться"},
+  {words:["Getting","a","promotion","means","working","harder"],ru:"Получить повышение означает работать усерднее",verbForm:"gerund",keyVerb:"working",note:"mean + gerund = следствие / значит"},
+  {words:["I","mean","to","finish","this","today"],ru:"Я намереваюсь закончить это сегодня",verbForm:"infinitive",keyVerb:"to finish",note:"mean + infinitive = намерение"},
+  // LIKE
+  {words:["I","like","swimming","in","the","morning"],ru:"Мне нравится плавать по утрам (вообще)",verbForm:"gerund",keyVerb:"swimming",note:"like + gerund = общее удовольствие от занятия"},
+  {words:["I","like","to","check","my","emails","first","thing"],ru:"Мне нравится проверять почту первым делом (привычка)",verbForm:"infinitive",keyVerb:"to check",note:"like + infinitive = привычка, которую считаешь правильной"},
+  {words:["She","likes","reading","in","bed"],ru:"Ей нравится читать в постели",verbForm:"gerund",keyVerb:"reading",note:"like + gerund = удовольствие"},
+  {words:["He","likes","to","plan","ahead"],ru:"Он любит всё планировать заранее",verbForm:"infinitive",keyVerb:"to plan",note:"like + infinitive = полезная привычка"},
+  // LOVE
+  {words:["She","loves","dancing","at","parties"],ru:"Она любит танцевать на вечеринках",verbForm:"gerund",keyVerb:"dancing",note:"love + gerund = любовь к процессу"},
+  {words:["He","loves","to","organise","things"],ru:"Он любит всё организовывать",verbForm:"infinitive",keyVerb:"to organise",note:"love + infinitive = стремление делать что-то"},
+  // HATE
+  {words:["I","hate","being","kept","waiting"],ru:"Я ненавижу, когда меня заставляют ждать",verbForm:"gerund",keyVerb:"being",note:"hate + gerund = ненависть к ситуации"},
+  {words:["She","hates","to","admit","she's","wrong"],ru:"Она ненавидит признавать, что неправа",verbForm:"infinitive",keyVerb:"to admit",note:"hate + infinitive = нежелательное действие"},
+  // BEGIN
+  {words:["It","began","raining","around","noon"],ru:"Около полудня начался дождь",verbForm:"gerund",keyVerb:"raining",note:"begin + gerund = начало действия"},
+  {words:["She","began","to","understand","his","point"],ru:"Она начала понимать его точку зрения",verbForm:"infinitive",keyVerb:"to understand",note:"begin + infinitive = начало действия"},
+  // START
+  {words:["The","audience","started","clapping"],ru:"Зрители начали аплодировать",verbForm:"gerund",keyVerb:"clapping",note:"start + gerund = начало действия"},
+  {words:["He","started","to","feel","unwell"],ru:"Он начал чувствовать себя нехорошо",verbForm:"infinitive",keyVerb:"to feel",note:"start + infinitive = начало состояния"},
+  // CONTINUE
+  {words:["She","continued","talking","after","the","interruption"],ru:"Она продолжила говорить после перерыва",verbForm:"gerund",keyVerb:"talking",note:"continue + gerund = продолжение действия"},
+  {words:["He","continued","to","do","his","job","despite","the","pressure"],ru:"Он продолжал выполнять свою работу несмотря на давление",verbForm:"infinitive",keyVerb:"to do",note:"continue + infinitive = продолжение действия"},
+  // NEED
+  {words:["The","car","needs","repairing"],ru:"Машине нужен ремонт (пассивное значение)",verbForm:"gerund",keyVerb:"repairing",note:"need + gerund = вещь нуждается в ремонте (пассив)"},
+  {words:["I","need","to","repair","the","car"],ru:"Мне нужно починить машину",verbForm:"infinitive",keyVerb:"to repair",note:"need + infinitive = человек должен что-то сделать"},
+  {words:["The","lawn","needs","mowing"],ru:"Газон нужно постричь",verbForm:"gerund",keyVerb:"mowing",note:"need + gerund = газон нуждается в стрижке (пассив)"},
+  {words:["You","need","to","mow","the","lawn","today"],ru:"Тебе нужно сегодня постричь газон",verbForm:"infinitive",keyVerb:"to mow",note:"need + infinitive = человек должен выполнить задачу"},
+  // PROPOSE
+  {words:["He","proposed","investing","in","real","estate"],ru:"Он предложил вложиться в недвижимость",verbForm:"gerund",keyVerb:"investing",note:"propose + gerund = предлагать идею"},
+  {words:["She","proposed","to","discuss","the","issue","further"],ru:"Она предложила обсудить вопрос подробнее",verbForm:"infinitive",keyVerb:"to discuss",note:"propose + infinitive = формальное предложение"},
+  // INTEND
+  {words:["I","intend","to","leave","early"],ru:"Я собираюсь уйти пораньше",verbForm:"infinitive",keyVerb:"to leave",note:"intend + infinitive = намерение"},
+  {words:["He","intended","going","by","train"],ru:"Он собирался ехать на поезде",verbForm:"gerund",keyVerb:"going",note:"intend + gerund = намерение (более формально)"},
+  // DREAD
+  {words:["She","dreads","making","public","speeches"],ru:"Она боится выступать публично",verbForm:"gerund",keyVerb:"making",note:"dread + gerund = бояться чего-то"},
+  {words:["I","dread","to","think","what","could","go","wrong"],ru:"Я боюсь даже думать, что могло пойти не так",verbForm:"infinitive",keyVerb:"to think",note:"dread + infinitive = в фразе 'dread to think'"},
+  // CAN'T BEAR
+  {words:["He","can't","bear","being","alone"],ru:"Он не может выносить одиночество",verbForm:"gerund",keyVerb:"being",note:"can't bear + gerund = невыносимость ситуации"},
+  {words:["I","can't","bear","to","watch","this"],ru:"Я не могу смотреть на это",verbForm:"infinitive",keyVerb:"to watch",note:"can't bear + infinitive = трудно вынести действие"},
+  // PREFER
+  {words:["She","prefers","working","alone"],ru:"Она предпочитает работать в одиночку",verbForm:"gerund",keyVerb:"working",note:"prefer + gerund = предпочтение в целом"},
+  {words:["I","prefer","to","read","the","original"],ru:"Я предпочитаю читать оригинал",verbForm:"infinitive",keyVerb:"to read",note:"prefer + infinitive = конкретное предпочтение"},
+  // BOTHER
+  {words:["Don't","bother","calling","him"],ru:"Не беспокойся, не звони ему",verbForm:"gerund",keyVerb:"calling",note:"bother + gerund = не стоит делать"},
+  {words:["She","didn't","bother","to","knock"],ru:"Она не потрудилась постучать",verbForm:"infinitive",keyVerb:"to knock",note:"bother + infinitive = не потрудился сделать"},
+  // ATTEMPT
+  {words:["He","attempted","opening","the","safe"],ru:"Он попытался открыть сейф",verbForm:"gerund",keyVerb:"opening",note:"attempt + gerund = попытка (нейтрально)"},
+  {words:["She","attempted","to","explain","herself"],ru:"Она попыталась объяснить своё поведение",verbForm:"infinitive",keyVerb:"to explain",note:"attempt + infinitive = попытка действия"},
+  // HATE (additional)
+  {words:["I","hate","to","break","the","news","to","you"],ru:"Мне неприятно сообщать тебе эту новость",verbForm:"infinitive",keyVerb:"to break",note:"hate + infinitive = неприятная необходимость"},
+  {words:["He","hates","getting","up","early"],ru:"Он терпеть не может рано вставать",verbForm:"gerund",keyVerb:"getting",note:"hate + gerund = ненависть к регулярному действию"},
+  // LIKE (additional)
+  {words:["I","would","like","to","speak","to","the","manager"],ru:"Я хотел бы поговорить с менеджером",verbForm:"infinitive",keyVerb:"to speak",note:"would like + infinitive = вежливая просьба / желание"},
+  {words:["She","likes","cooking","big","dinners"],ru:"Она любит готовить большие ужины",verbForm:"gerund",keyVerb:"cooking",note:"like + gerund = удовольствие от процесса"},
+];
+</script>
+</body>
+</html>
