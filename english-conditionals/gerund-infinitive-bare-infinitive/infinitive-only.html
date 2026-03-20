@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Infinitive Only</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f0f14; color: #f0f0f0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 14px 16px 40px; }
+    .top-bar { width: 100%; max-width: 480px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .top-bar h1 { font-size: 15px; color: #666; text-transform: uppercase; letter-spacing: 1.5px; text-align: center; }
+    .btn-back { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 8px 14px; font-size: 15px; cursor: pointer; text-decoration: none; line-height: 1; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .btn-rule { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 8px 14px; font-size: 15px; cursor: pointer; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .progress-bar-wrap { width: 100%; max-width: 480px; background: #1e1e2a; border-radius: 6px; height: 6px; margin-bottom: 6px; }
+    .progress-bar { height: 6px; background: #7b68ee; border-radius: 6px; transition: width 0.4s ease; }
+    .progress-info { width: 100%; max-width: 480px; font-size: 14px; color: #555; margin-bottom: 14px; }
+    .task-card { width: 100%; max-width: 480px; background: #1a1a2e; border: 1.5px solid #2e2e50; border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; }
+    .task-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .task-ru { font-size: 22px; color: #e0e0ff; line-height: 1.5; font-weight: 500; }
+    .form-choices { width: 100%; max-width: 480px; display: flex; gap: 10px; margin-bottom: 16px; }
+    .form-btn { flex: 1; padding: 18px 8px; font-size: 18px; font-weight: 700; border: 1.5px solid #3d3d5c; border-radius: 14px; background: #1a1a2e; color: #d0d0f0; cursor: pointer; transition: background 0.15s, border-color 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .form-btn:active { transform: scale(0.97); }
+    .form-btn.correct { border-color: #4caf82; background: #1a2e22; color: #4caf82; }
+    .form-btn.wrong   { border-color: #e05c5c; background: #2e1a1a; color: #e05c5c; }
+    .sentence-area { width: 100%; max-width: 480px; min-height: 70px; background: #1a1a24; border: 2px solid #2e2e44; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; transition: border-color 0.3s; }
+    .sentence-area.correct { border-color: #4caf82; }
+    .sentence-area.wrong   { border-color: #e05c5c; }
+    .placeholder { color: #444; font-size: 16px; font-style: italic; }
+    .chip { background: #2a2a3e; border: 1.5px solid #3d3d5c; color: #d0d0f0; border-radius: 22px; padding: 11px 18px; font-size: 19px; cursor: pointer; user-select: none; transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .chip:active { transform: scale(0.95); }
+    .chip.in-answer { background: #35355a; border-color: #7b68ee; color: #c8c8ff; }
+    .bank-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; align-self: flex-start; max-width: 480px; width: 100%; }
+    .word-bank { width: 100%; max-width: 480px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; min-height: 50px; }
+    .btn-row { display: flex; gap: 12px; width: 100%; max-width: 480px; }
+    button { border: none; border-radius: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    button:active { transform: scale(0.97); }
+    .btn-row button { flex: 1; padding: 20px; font-size: 20px; }
+    #btn-check { background: #7b68ee; color: #fff; }
+    #btn-skip  { background: #1e1e2a; color: #777; border: 1.5px solid #2e2e44; flex: 0 0 auto; padding: 20px 24px; }
+    .feedback { margin-top: 14px; width: 100%; max-width: 480px; font-size: 17px; line-height: 1.6; min-height: 50px; }
+    .feedback .correct-label { color: #4caf82; font-weight: 700; }
+    .feedback .wrong-label   { color: #e05c5c; font-weight: 700; }
+    .feedback .answer        { color: #9d9dff; margin-top: 4px; }
+    .note-box { margin-top: 10px; background: #1e1e3a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; font-size: 14px; color: #c8c8ff; display: none; }
+    .finish { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-top: 40px; }
+    .finish.show { display: flex; }
+    .finish h2 { font-size: 30px; color: #7b68ee; }
+    .finish button { max-width: 260px; background: #7b68ee; color: #fff; font-size: 18px; padding: 18px; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #1a1a2e; border: 1.5px solid #3d3d5c; border-radius: 18px; padding: 24px 22px; max-width: 460px; width: 100%; max-height: 85vh; overflow-y: auto; }
+    .modal h2 { font-size: 18px; color: #9d9dff; margin-bottom: 16px; }
+    .modal p { font-size: 14px; color: #aaa; line-height: 1.7; margin-bottom: 10px; }
+    .modal .example { background: #12122a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; color: #d0d0f0; line-height: 1.6; }
+    .modal-close { margin-top: 20px; width: 100%; background: #7b68ee; color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html" class="btn-back">‹ Назад</a>
+  <h1>Infinitive Only</h1>
+  <button class="btn-rule" onclick="showRule()">📖 Правило</button>
+</div>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+<div class="progress-info" id="progress-info">загрузка…</div>
+
+<div id="step1">
+  <div class="task-card">
+    <div class="task-label">Какая форма глагола?</div>
+    <div class="task-ru" id="task-ru">…</div>
+  </div>
+  <div class="form-choices">
+    <button class="form-btn" data-form="gerund"     onclick="chooseForm('gerund')">doing</button>
+    <button class="form-btn" data-form="infinitive" onclick="chooseForm('infinitive')">to do</button>
+    <button class="form-btn" data-form="bare"       onclick="chooseForm('bare')">do</button>
+  </div>
+</div>
+
+<div id="step2" style="display:none">
+  <div id="game">
+    <div class="task-card">
+      <div class="task-label">Переведи на английский</div>
+      <div class="task-ru" id="task-ru-2">…</div>
+    </div>
+    <div class="sentence-area" id="sentence-area">
+      <span class="placeholder" id="placeholder">Tap words to build the sentence</span>
+    </div>
+    <div class="bank-label">Слова</div>
+    <div class="word-bank" id="word-bank"></div>
+    <div class="btn-row">
+      <button id="btn-skip"  onclick="skip()">Skip</button>
+      <button id="btn-check" onclick="check()">Check ✓</button>
+    </div>
+    <div class="feedback" id="feedback"><div class="note-box" id="note-box"></div></div>
+  </div>
+</div>
+
+<div class="finish" id="finish">
+  <h2>🎉 Готово!</h2>
+  <p id="final-score"></p>
+  <button onclick="restart()">Продолжить</button>
+  <button onclick="resetProgress()" style="background:#1e1e2a;color:#777;border:1.5px solid #2e2e44;margin-top:4px;">Сначала</button>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Infinitive Only — Правило</h2>
+    <p>Следующие глаголы всегда требуют <strong style="color:#c8c8ff">инфинитива</strong> (to do):</p>
+    <div class="example">want, need, decide, hope, refuse, agree, plan, manage, fail, afford, offer, promise, expect, seem, pretend, learn, choose</div>
+    <div class="example">I want <em style="color:#9d9dff">to learn</em> Spanish. She decided <em style="color:#9d9dff">to leave</em>.</div>
+    <button class="modal-close" onclick="hideRule()">Понятно ✓</button>
+  </div>
+</div>
+
+<script src="sentences-data.js"></script>
+<script>
+const DATA_KEY = 'infinitiveOnly';
+const sentences = window.sentencesData[DATA_KEY];
+let done = JSON.parse(localStorage.getItem(DATA_KEY) || '[]');
+let queue = [], current = null, formChosen = false;
+function buildQueue() { const all = sentences.map((_,i)=>i); const notDone = all.filter(i=>!done.includes(i)); queue = notDone.length ? shuffle([...notDone]) : shuffle([...all]); }
+function shuffle(arr) { for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+function updateProgressBar() { const pct=sentences.length?Math.round(done.length/sentences.length*100):0; document.getElementById('progress-bar').style.width=pct+'%'; document.getElementById('progress-info').textContent=done.length+' / '+sentences.length+' изучено'; }
+function loadQuestion() { if(!queue.length)buildQueue(); const idx=queue.shift(); current={...sentences[idx],idx}; formChosen=false; document.getElementById('step1').style.display=''; document.getElementById('step2').style.display='none'; document.querySelectorAll('.form-btn').forEach(btn=>{btn.classList.remove('correct','wrong');btn.disabled=false;}); document.getElementById('task-ru').textContent=current.ru; }
+function chooseForm(form) { if(formChosen)return; const btns=document.querySelectorAll('.form-btn'); btns.forEach(btn=>btn.disabled=true); if(form===current.verbForm){formChosen=true;btns.forEach(btn=>{if(btn.dataset.form===form)btn.classList.add('correct');});setTimeout(goToStep2,600);}else{btns.forEach(btn=>{if(btn.dataset.form===form)btn.classList.add('wrong');if(btn.dataset.form===current.verbForm){btn.classList.add('correct');btn.disabled=false;}});} }
+function goToStep2() { document.getElementById('step1').style.display='none'; document.getElementById('step2').style.display=''; document.getElementById('task-ru-2').textContent=current.ru; document.getElementById('feedback').innerHTML='<div class="note-box" id="note-box"></div>'; document.getElementById('sentence-area').className='sentence-area'; document.getElementById('sentence-area').innerHTML='<span class="placeholder" id="placeholder">Tap words to build the sentence</span>'; renderBank(shuffle([...current.words])); document.getElementById('btn-check').textContent='Check ✓'; document.getElementById('btn-check').onclick=check; }
+function renderBank(words) { const bank=document.getElementById('word-bank'); bank.innerHTML=''; words.forEach(word=>{const chip=document.createElement('button');chip.className='chip';chip.textContent=word;chip.onclick=()=>moveToAnswer(chip);bank.appendChild(chip);}); }
+function moveToAnswer(chip) { chip.classList.add('in-answer'); const area=document.getElementById('sentence-area'); const ph=document.getElementById('placeholder'); if(ph)ph.remove(); area.appendChild(chip); chip.onclick=()=>moveToBank(chip); }
+function moveToBank(chip) { chip.classList.remove('in-answer'); document.getElementById('word-bank').appendChild(chip); chip.onclick=()=>moveToAnswer(chip); const area=document.getElementById('sentence-area'); if(!area.querySelector('.chip')){const ph=document.createElement('span');ph.className='placeholder';ph.id='placeholder';ph.textContent='Tap words to build the sentence';area.appendChild(ph);} }
+function check() { const answer=[...document.querySelectorAll('#sentence-area .chip')].map(c=>c.textContent); if(!answer.length)return; const area=document.getElementById('sentence-area'); const fb=document.getElementById('feedback'); if(JSON.stringify(answer)===JSON.stringify(current.words)){area.classList.add('correct');fb.innerHTML='<span class="correct-label">✓ Правильно!</span>';if(current.note){const nb=document.createElement('div');nb.className='note-box';nb.style.display='block';nb.textContent='💡 '+current.note;fb.appendChild(nb);}if(!done.includes(current.idx)){done.push(current.idx);localStorage.setItem(DATA_KEY,JSON.stringify(done));}updateProgressBar();document.getElementById('btn-check').textContent='Далее →';document.getElementById('btn-check').onclick=nextQuestion;if(done.length===sentences.length)setTimeout(showFinish,800);}else{area.classList.add('wrong');fb.innerHTML='<span class="wrong-label">✗ Неверно.</span><div class="answer">'+current.words.join(' ')+'</div>';} }
+function skip() { nextQuestion(); }
+function nextQuestion() { document.getElementById('btn-check').textContent='Check ✓'; document.getElementById('btn-check').onclick=check; loadQuestion(); }
+function showFinish() { document.getElementById('step1').style.display='none'; document.getElementById('step2').style.display='none'; document.getElementById('finish').classList.add('show'); document.getElementById('final-score').textContent='Все '+sentences.length+' предложений пройдено!'; }
+function restart() { document.getElementById('finish').classList.remove('show'); buildQueue(); loadQuestion(); }
+function resetProgress() { done=[]; localStorage.removeItem(DATA_KEY); updateProgressBar(); restart(); }
+function showRule() { document.getElementById('modal').classList.add('show'); }
+function hideRule() { document.getElementById('modal').classList.remove('show'); }
+buildQueue(); loadQuestion(); updateProgressBar();
+</script>
+
+<!-- ===== SOURCE DATA for gen_sentences_data.py (do not remove) ===== -->
+<script>
+// Source data for gen_sentences_data.py (do not remove this comment)
+const sentences = [
+  {words:["I","want","to","learn","Spanish"],ru:"Я хочу выучить испанский",verbForm:"infinitive",keyVerb:"to learn",note:null},
+  {words:["She","needs","to","finish","this","by","Friday"],ru:"Ей нужно закончить это к пятнице",verbForm:"infinitive",keyVerb:"to finish",note:null},
+  {words:["He","decided","to","quit","his","job"],ru:"Он решил уволиться",verbForm:"infinitive",keyVerb:"to quit",note:null},
+  {words:["They","hope","to","visit","Japan","next","year"],ru:"Они надеются посетить Японию в следующем году",verbForm:"infinitive",keyVerb:"to visit",note:null},
+  {words:["She","refused","to","answer","the","question"],ru:"Она отказалась отвечать на вопрос",verbForm:"infinitive",keyVerb:"to answer",note:null},
+  {words:["We","agreed","to","meet","at","noon"],ru:"Мы договорились встретиться в полдень",verbForm:"infinitive",keyVerb:"to meet",note:null},
+  {words:["He","plans","to","start","a","business"],ru:"Он планирует открыть бизнес",verbForm:"infinitive",keyVerb:"to start",note:null},
+  {words:["She","managed","to","solve","the","problem"],ru:"Ей удалось решить проблему",verbForm:"infinitive",keyVerb:"to solve",note:null},
+  {words:["I","failed","to","understand","his","explanation"],ru:"Я не смог понять его объяснение",verbForm:"infinitive",keyVerb:"to understand",note:null},
+  {words:["They","couldn't","afford","to","buy","a","new","car"],ru:"Они не могли позволить себе купить новую машину",verbForm:"infinitive",keyVerb:"to buy",note:null},
+  {words:["He","offered","to","help","with","the","project"],ru:"Он предложил помочь с проектом",verbForm:"infinitive",keyVerb:"to help",note:null},
+  {words:["She","promised","to","call","back"],ru:"Она пообещала перезвонить",verbForm:"infinitive",keyVerb:"to call",note:null},
+  {words:["I","expect","to","hear","from","them","soon"],ru:"Я ожидаю скоро от них услышать",verbForm:"infinitive",keyVerb:"to hear",note:null},
+  {words:["The","team","seemed","to","understand"],ru:"Команда, казалось, поняла",verbForm:"infinitive",keyVerb:"to understand",note:null},
+  {words:["He","pretended","to","be","asleep"],ru:"Он притворялся спящим",verbForm:"infinitive",keyVerb:"to be",note:null},
+  {words:["She","learned","to","drive","at","eighteen"],ru:"Она научилась водить машину в восемнадцать лет",verbForm:"infinitive",keyVerb:"to drive",note:null},
+  {words:["I","chose","to","stay","home"],ru:"Я предпочёл остаться дома",verbForm:"infinitive",keyVerb:"to stay",note:null},
+  {words:["They","decided","to","postpone","the","trip"],ru:"Они решили перенести поездку",verbForm:"infinitive",keyVerb:"to postpone",note:null},
+  {words:["She","wants","to","become","a","doctor"],ru:"Она хочет стать врачом",verbForm:"infinitive",keyVerb:"to become",note:null},
+  {words:["He","agreed","to","sign","the","contract"],ru:"Он согласился подписать контракт",verbForm:"infinitive",keyVerb:"to sign",note:null},
+  {words:["I","need","to","buy","some","groceries"],ru:"Мне нужно купить продукты",verbForm:"infinitive",keyVerb:"to buy",note:null},
+  {words:["She","hopes","to","get","a","promotion"],ru:"Она надеется получить повышение",verbForm:"infinitive",keyVerb:"to get",note:null},
+  {words:["He","refused","to","apologise"],ru:"Он отказался извиниться",verbForm:"infinitive",keyVerb:"to apologise",note:null},
+  {words:["They","managed","to","catch","the","last","train"],ru:"Им удалось сесть на последний поезд",verbForm:"infinitive",keyVerb:"to catch",note:null},
+  {words:["I","plan","to","read","more","books","this","year"],ru:"Я планирую читать больше книг в этом году",verbForm:"infinitive",keyVerb:"to read",note:null},
+  {words:["She","failed","to","pass","the","exam"],ru:"Ей не удалось сдать экзамен",verbForm:"infinitive",keyVerb:"to pass",note:null},
+  {words:["He","offered","to","drive","us","to","the","airport"],ru:"Он предложил отвезти нас в аэропорт",verbForm:"infinitive",keyVerb:"to drive",note:null},
+  {words:["I","promised","to","be","there","on","time"],ru:"Я пообещал быть там вовремя",verbForm:"infinitive",keyVerb:"to be",note:null},
+  {words:["She","chose","to","ignore","his","message"],ru:"Она предпочла проигнорировать его сообщение",verbForm:"infinitive",keyVerb:"to ignore",note:null},
+  {words:["They","hope","to","finish","the","project","soon"],ru:"Они надеются скоро закончить проект",verbForm:"infinitive",keyVerb:"to finish",note:null},
+  {words:["He","wants","to","travel","the","world"],ru:"Он хочет объездить весь мир",verbForm:"infinitive",keyVerb:"to travel",note:null},
+  {words:["I","decided","to","take","a","break"],ru:"Я решил сделать перерыв",verbForm:"infinitive",keyVerb:"to take",note:null},
+  {words:["She","agreed","to","share","the","rent"],ru:"Она согласилась разделить аренду",verbForm:"infinitive",keyVerb:"to share",note:null},
+  {words:["He","seems","to","enjoy","his","new","role"],ru:"Кажется, ему нравится его новая роль",verbForm:"infinitive",keyVerb:"to enjoy",note:null},
+  {words:["They","refused","to","leave","without","a","fight"],ru:"Они отказались уходить без борьбы",verbForm:"infinitive",keyVerb:"to leave",note:null},
+  {words:["I","can't","afford","to","miss","this","deadline"],ru:"Я не могу позволить себе пропустить этот дедлайн",verbForm:"infinitive",keyVerb:"to miss",note:null},
+  {words:["She","pretended","to","know","the","answer"],ru:"Она притворялась, что знает ответ",verbForm:"infinitive",keyVerb:"to know",note:null},
+  {words:["He","learned","to","cook","during","the","lockdown"],ru:"Он научился готовить во время локдауна",verbForm:"infinitive",keyVerb:"to cook",note:null},
+  {words:["We","plan","to","move","to","a","bigger","flat"],ru:"Мы планируем переехать в квартиру побольше",verbForm:"infinitive",keyVerb:"to move",note:null},
+  {words:["She","decided","to","study","medicine"],ru:"Она решила изучать медицину",verbForm:"infinitive",keyVerb:"to study",note:null},
+  {words:["He","managed","to","fix","the","car","himself"],ru:"Ему удалось починить машину самому",verbForm:"infinitive",keyVerb:"to fix",note:null},
+  {words:["I","expect","to","finish","by","tomorrow"],ru:"Я рассчитываю закончить завтра",verbForm:"infinitive",keyVerb:"to finish",note:null},
+  {words:["They","promised","to","keep","it","a","secret"],ru:"Они пообещали хранить это в тайне",verbForm:"infinitive",keyVerb:"to keep",note:null},
+  {words:["She","refused","to","eat","meat"],ru:"Она отказалась есть мясо",verbForm:"infinitive",keyVerb:"to eat",note:null},
+  {words:["He","offered","to","teach","her","to","swim"],ru:"Он предложил научить её плавать",verbForm:"infinitive",keyVerb:"to teach",note:null},
+  {words:["I","want","to","speak","to","the","manager"],ru:"Я хочу поговорить с менеджером",verbForm:"infinitive",keyVerb:"to speak",note:null},
+  {words:["She","hopes","to","travel","after","graduation"],ru:"Она надеется путешествовать после окончания учёбы",verbForm:"infinitive",keyVerb:"to travel",note:null},
+  {words:["He","failed","to","convince","them"],ru:"Ему не удалось убедить их",verbForm:"infinitive",keyVerb:"to convince",note:null},
+  {words:["They","decided","to","get","a","dog"],ru:"Они решили завести собаку",verbForm:"infinitive",keyVerb:"to get",note:null},
+  {words:["I","need","to","call","my","parents","tonight"],ru:"Мне нужно позвонить родителям сегодня вечером",verbForm:"infinitive",keyVerb:"to call",note:null},
+  {words:["She","chose","to","work","from","home"],ru:"Она предпочла работать из дома",verbForm:"infinitive",keyVerb:"to work",note:null},
+  {words:["He","agreed","to","pay","for","dinner"],ru:"Он согласился заплатить за ужин",verbForm:"infinitive",keyVerb:"to pay",note:null},
+  {words:["They","managed","to","escape","in","time"],ru:"Им удалось вовремя сбежать",verbForm:"infinitive",keyVerb:"to escape",note:null},
+  {words:["I","plan","to","take","a","trip","to","Italy"],ru:"Я планирую съездить в Италию",verbForm:"infinitive",keyVerb:"to take",note:null},
+  {words:["She","seems","to","be","happy"],ru:"Она, кажется, счастлива",verbForm:"infinitive",keyVerb:"to be",note:null},
+  {words:["He","pretended","to","be","busy"],ru:"Он притворялся занятым",verbForm:"infinitive",keyVerb:"to be",note:null},
+  {words:["I","can't","afford","to","make","mistakes"],ru:"Я не могу позволить себе ошибаться",verbForm:"infinitive",keyVerb:"to make",note:null},
+  {words:["She","promised","to","arrive","early"],ru:"Она пообещала прийти пораньше",verbForm:"infinitive",keyVerb:"to arrive",note:null},
+  {words:["He","learned","to","speak","Japanese"],ru:"Он научился говорить по-японски",verbForm:"infinitive",keyVerb:"to speak",note:null},
+  {words:["They","hope","to","raise","enough","money"],ru:"Они надеются собрать достаточно денег",verbForm:"infinitive",keyVerb:"to raise",note:null},
+  {words:["I","want","to","improve","my","writing"],ru:"Я хочу улучшить свой стиль письма",verbForm:"infinitive",keyVerb:"to improve",note:null},
+  {words:["She","refused","to","sign","the","form"],ru:"Она отказалась подписывать форму",verbForm:"infinitive",keyVerb:"to sign",note:null},
+  {words:["He","plans","to","propose","to","her"],ru:"Он планирует сделать ей предложение",verbForm:"infinitive",keyVerb:"to propose",note:null},
+  {words:["We","decided","to","cancel","the","party"],ru:"Мы решили отменить вечеринку",verbForm:"infinitive",keyVerb:"to cancel",note:null},
+  {words:["She","managed","to","get","a","table","at","the","restaurant"],ru:"Ей удалось занять столик в ресторане",verbForm:"infinitive",keyVerb:"to get",note:null},
+  {words:["He","offered","to","translate","the","document"],ru:"Он предложил перевести документ",verbForm:"infinitive",keyVerb:"to translate",note:null},
+  {words:["I","expect","to","see","results","soon"],ru:"Я ожидаю скоро увидеть результаты",verbForm:"infinitive",keyVerb:"to see",note:null},
+  {words:["She","chose","to","forgive","him"],ru:"Она решила простить его",verbForm:"infinitive",keyVerb:"to forgive",note:null},
+  {words:["They","agreed","to","split","the","bill"],ru:"Они договорились разделить счёт",verbForm:"infinitive",keyVerb:"to split",note:null},
+  {words:["He","failed","to","submit","the","report","on","time"],ru:"Он не успел сдать отчёт вовремя",verbForm:"infinitive",keyVerb:"to submit",note:null},
+  {words:["I","learned","to","accept","criticism"],ru:"Я научился принимать критику",verbForm:"infinitive",keyVerb:"to accept",note:null},
+  {words:["She","seems","to","know","everyone","here"],ru:"Кажется, она знает здесь всех",verbForm:"infinitive",keyVerb:"to know",note:null},
+  {words:["He","wants","to","write","a","novel"],ru:"Он хочет написать роман",verbForm:"infinitive",keyVerb:"to write",note:null},
+  {words:["They","refused","to","cooperate"],ru:"Они отказались сотрудничать",verbForm:"infinitive",keyVerb:"to cooperate",note:null},
+  {words:["I","plan","to","wake","up","earlier"],ru:"Я планирую вставать раньше",verbForm:"infinitive",keyVerb:"to wake",note:null},
+  {words:["She","promised","to","water","my","plants"],ru:"Она пообещала поливать мои растения",verbForm:"infinitive",keyVerb:"to water",note:null},
+  {words:["He","managed","to","finish","before","the","deadline"],ru:"Ему удалось закончить до дедлайна",verbForm:"infinitive",keyVerb:"to finish",note:null},
+  {words:["I","need","to","find","a","new","flat"],ru:"Мне нужно найти новую квартиру",verbForm:"infinitive",keyVerb:"to find",note:null},
+  {words:["She","pretended","not","to","hear","him"],ru:"Она притворилась, что не слышит его",verbForm:"infinitive",keyVerb:"to hear",note:null},
+  {words:["He","hopes","to","get","into","university"],ru:"Он надеется поступить в университет",verbForm:"infinitive",keyVerb:"to get",note:null},
+  {words:["They","chose","to","take","the","scenic","route"],ru:"Они решили поехать живописной дорогой",verbForm:"infinitive",keyVerb:"to take",note:null},
+  {words:["I","decided","to","quit","social","media"],ru:"Я решил отказаться от социальных сетей",verbForm:"infinitive",keyVerb:"to quit",note:null},
+  {words:["She","offered","to","babysit","for","them"],ru:"Она предложила посидеть с их детьми",verbForm:"infinitive",keyVerb:"to babysit",note:null},
+  {words:["He","agreed","to","work","on","the","weekend"],ru:"Он согласился поработать в выходные",verbForm:"infinitive",keyVerb:"to work",note:null},
+  {words:["I","can't","afford","to","buy","a","house","right","now"],ru:"Я не могу сейчас позволить себе купить дом",verbForm:"infinitive",keyVerb:"to buy",note:null},
+  {words:["She","expects","to","graduate","in","June"],ru:"Она рассчитывает окончить учёбу в июне",verbForm:"infinitive",keyVerb:"to graduate",note:null},
+  {words:["He","plans","to","join","a","gym"],ru:"Он планирует записаться в зал",verbForm:"infinitive",keyVerb:"to join",note:null},
+  {words:["They","promised","to","be","back","by","midnight"],ru:"Они пообещали вернуться до полуночи",verbForm:"infinitive",keyVerb:"to be",note:null},
+  {words:["I","need","to","renew","my","passport"],ru:"Мне нужно продлить паспорт",verbForm:"infinitive",keyVerb:"to renew",note:null},
+  {words:["She","wants","to","open","her","own","café"],ru:"Она хочет открыть своё кафе",verbForm:"infinitive",keyVerb:"to open",note:null},
+  {words:["He","decided","to","adopt","a","cat"],ru:"Он решил взять кошку из приюта",verbForm:"infinitive",keyVerb:"to adopt",note:null},
+  {words:["They","managed","to","find","a","parking","spot"],ru:"Им удалось найти место для парковки",verbForm:"infinitive",keyVerb:"to find",note:null},
+  {words:["I","want","to","finish","this","before","dinner"],ru:"Я хочу закончить это до ужина",verbForm:"infinitive",keyVerb:"to finish",note:null},
+  {words:["She","refuses","to","give","up"],ru:"Она отказывается сдаваться",verbForm:"infinitive",keyVerb:"to give",note:null},
+  {words:["He","learned","to","play","chess","as","a","child"],ru:"Он научился играть в шахматы в детстве",verbForm:"infinitive",keyVerb:"to play",note:null},
+  {words:["They","agreed","to","share","the","responsibility"],ru:"Они согласились разделить ответственность",verbForm:"infinitive",keyVerb:"to share",note:null},
+];
+</script>
+</body>
+</html>

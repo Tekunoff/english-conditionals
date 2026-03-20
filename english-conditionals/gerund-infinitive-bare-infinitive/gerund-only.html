@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Gerund Only</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f0f14; color: #f0f0f0;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 14px 16px 40px;
+    }
+    .top-bar { width: 100%; max-width: 480px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .top-bar h1 { font-size: 15px; color: #666; text-transform: uppercase; letter-spacing: 1.5px; text-align: center; }
+    .btn-back { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 8px 14px; font-size: 15px; cursor: pointer; text-decoration: none; line-height: 1; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .btn-rule { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 8px 14px; font-size: 15px; cursor: pointer; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .progress-bar-wrap { width: 100%; max-width: 480px; background: #1e1e2a; border-radius: 6px; height: 6px; margin-bottom: 6px; }
+    .progress-bar { height: 6px; background: #7b68ee; border-radius: 6px; transition: width 0.4s ease; }
+    .progress-info { width: 100%; max-width: 480px; font-size: 14px; color: #555; margin-bottom: 14px; }
+    .task-card { width: 100%; max-width: 480px; background: #1a1a2e; border: 1.5px solid #2e2e50; border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; }
+    .task-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .task-ru { font-size: 22px; color: #e0e0ff; line-height: 1.5; font-weight: 500; }
+    .form-choices { width: 100%; max-width: 480px; display: flex; gap: 10px; margin-bottom: 16px; }
+    .form-btn {
+      flex: 1; padding: 18px 8px; font-size: 18px; font-weight: 700;
+      border: 1.5px solid #3d3d5c; border-radius: 14px;
+      background: #1a1a2e; color: #d0d0f0; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .form-btn:active { transform: scale(0.97); }
+    .form-btn.correct { border-color: #4caf82; background: #1a2e22; color: #4caf82; }
+    .form-btn.wrong   { border-color: #e05c5c; background: #2e1a1a; color: #e05c5c; }
+    .sentence-area { width: 100%; max-width: 480px; min-height: 70px; background: #1a1a24; border: 2px solid #2e2e44; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; transition: border-color 0.3s; }
+    .sentence-area.correct { border-color: #4caf82; }
+    .sentence-area.wrong   { border-color: #e05c5c; }
+    .placeholder { color: #444; font-size: 16px; font-style: italic; }
+    .chip { background: #2a2a3e; border: 1.5px solid #3d3d5c; color: #d0d0f0; border-radius: 22px; padding: 11px 18px; font-size: 19px; cursor: pointer; user-select: none; transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .chip:active { transform: scale(0.95); }
+    .chip.in-answer { background: #35355a; border-color: #7b68ee; color: #c8c8ff; }
+    .bank-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; align-self: flex-start; max-width: 480px; width: 100%; }
+    .word-bank { width: 100%; max-width: 480px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; min-height: 50px; }
+    .btn-row { display: flex; gap: 12px; width: 100%; max-width: 480px; }
+    button { border: none; border-radius: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    button:active { transform: scale(0.97); }
+    .btn-row button { flex: 1; padding: 20px; font-size: 20px; }
+    #btn-check { background: #7b68ee; color: #fff; }
+    #btn-skip  { background: #1e1e2a; color: #777; border: 1.5px solid #2e2e44; flex: 0 0 auto; padding: 20px 24px; }
+    .feedback { margin-top: 14px; width: 100%; max-width: 480px; font-size: 17px; line-height: 1.6; min-height: 50px; }
+    .feedback .correct-label { color: #4caf82; font-weight: 700; }
+    .feedback .wrong-label   { color: #e05c5c; font-weight: 700; }
+    .feedback .answer        { color: #9d9dff; margin-top: 4px; }
+    .note-box { margin-top: 10px; background: #1e1e3a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; font-size: 14px; color: #c8c8ff; display: none; }
+    .finish { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-top: 40px; }
+    .finish.show { display: flex; }
+    .finish h2 { font-size: 30px; color: #7b68ee; }
+    .finish button { max-width: 260px; background: #7b68ee; color: #fff; font-size: 18px; padding: 18px; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #1a1a2e; border: 1.5px solid #3d3d5c; border-radius: 18px; padding: 24px 22px; max-width: 460px; width: 100%; max-height: 85vh; overflow-y: auto; }
+    .modal h2 { font-size: 18px; color: #9d9dff; margin-bottom: 16px; }
+    .modal p { font-size: 14px; color: #aaa; line-height: 1.7; margin-bottom: 10px; }
+    .modal .example { background: #12122a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; color: #d0d0f0; line-height: 1.6; }
+    .modal .example span { display: block; color: #777; font-size: 13px; margin-top: 2px; font-style: italic; }
+    .modal-close { margin-top: 20px; width: 100%; background: #7b68ee; color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html" class="btn-back">‹ Назад</a>
+  <h1>Gerund Only</h1>
+  <button class="btn-rule" onclick="showRule()">📖 Правило</button>
+</div>
+<div class="progress-bar-wrap">
+  <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+</div>
+<div class="progress-info" id="progress-info">загрузка…</div>
+
+<div id="step1">
+  <div class="task-card">
+    <div class="task-label">Какая форма глагола?</div>
+    <div class="task-ru" id="task-ru">…</div>
+  </div>
+  <div class="form-choices">
+    <button class="form-btn" data-form="gerund"     onclick="chooseForm('gerund')">doing</button>
+    <button class="form-btn" data-form="infinitive" onclick="chooseForm('infinitive')">to do</button>
+    <button class="form-btn" data-form="bare"       onclick="chooseForm('bare')">do</button>
+  </div>
+</div>
+
+<div id="step2" style="display:none">
+  <div id="game">
+    <div class="task-card">
+      <div class="task-label">Переведи на английский</div>
+      <div class="task-ru" id="task-ru-2">…</div>
+    </div>
+    <div class="sentence-area" id="sentence-area">
+      <span class="placeholder" id="placeholder">Tap words to build the sentence</span>
+    </div>
+    <div class="bank-label">Слова</div>
+    <div class="word-bank" id="word-bank"></div>
+    <div class="btn-row">
+      <button id="btn-skip"  onclick="skip()">Skip</button>
+      <button id="btn-check" onclick="check()">Check ✓</button>
+    </div>
+    <div class="feedback" id="feedback">
+      <div class="note-box" id="note-box"></div>
+    </div>
+  </div>
+</div>
+
+<div class="finish" id="finish">
+  <h2>🎉 Готово!</h2>
+  <p id="final-score"></p>
+  <button onclick="restart()">Продолжить</button>
+  <button onclick="resetProgress()" style="background:#1e1e2a;color:#777;border:1.5px solid #2e2e44;margin-top:4px;">Сначала</button>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Gerund Only — Правило</h2>
+    <p>Следующие глаголы всегда требуют <strong style="color:#c8c8ff">герундия</strong> (doing):</p>
+    <div class="example">enjoy, mind, avoid, finish, keep, consider, suggest, risk, practise, deny, miss, fancy, can't help, can't stand, it's worth</div>
+    <div class="example">I enjoy <em style="color:#9d9dff">swimming</em>. She avoids <em style="color:#9d9dff">eating</em> late.</div>
+    <button class="modal-close" onclick="hideRule()">Понятно ✓</button>
+  </div>
+</div>
+
+<script src="sentences-data.js"></script>
+<script>
+const DATA_KEY = 'gerundOnly';
+const sentences = window.sentencesData[DATA_KEY];
+
+let done = JSON.parse(localStorage.getItem(DATA_KEY) || '[]');
+let queue = [];
+let current = null;
+let formChosen = false;
+
+function buildQueue() {
+  const all = sentences.map((_, i) => i);
+  const notDone = all.filter(i => !done.includes(i));
+  queue = notDone.length ? shuffle([...notDone]) : shuffle([...all]);
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function updateProgressBar() {
+  const pct = sentences.length ? Math.round(done.length / sentences.length * 100) : 0;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-info').textContent = done.length + ' / ' + sentences.length + ' изучено';
+}
+
+function loadQuestion() {
+  if (!queue.length) buildQueue();
+  const idx = queue.shift();
+  current = { ...sentences[idx], idx };
+  formChosen = false;
+
+  document.getElementById('step1').style.display = '';
+  document.getElementById('step2').style.display = 'none';
+  document.querySelectorAll('.form-btn').forEach(btn => {
+    btn.classList.remove('correct', 'wrong');
+    btn.disabled = false;
+  });
+  document.getElementById('task-ru').textContent = current.ru;
+}
+
+function chooseForm(form) {
+  if (formChosen) return;
+  const btns = document.querySelectorAll('.form-btn');
+  btns.forEach(btn => btn.disabled = true);
+
+  if (form === current.verbForm) {
+    formChosen = true;
+    btns.forEach(btn => { if (btn.dataset.form === form) btn.classList.add('correct'); });
+    setTimeout(goToStep2, 600);
+  } else {
+    btns.forEach(btn => {
+      if (btn.dataset.form === form) btn.classList.add('wrong');
+      if (btn.dataset.form === current.verbForm) { btn.classList.add('correct'); btn.disabled = false; }
+    });
+  }
+}
+
+function goToStep2() {
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = '';
+  document.getElementById('task-ru-2').textContent = current.ru;
+  document.getElementById('feedback').innerHTML = '<div class="note-box" id="note-box"></div>';
+  document.getElementById('sentence-area').className = 'sentence-area';
+  document.getElementById('sentence-area').innerHTML =
+    '<span class="placeholder" id="placeholder">Tap words to build the sentence</span>';
+  renderBank(shuffle([...current.words]));
+  document.getElementById('btn-check').textContent = 'Check ✓';
+  document.getElementById('btn-check').onclick = check;
+}
+
+function renderBank(words) {
+  const bank = document.getElementById('word-bank');
+  bank.innerHTML = '';
+  words.forEach(word => {
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.textContent = word;
+    chip.onclick = () => moveToAnswer(chip);
+    bank.appendChild(chip);
+  });
+}
+
+function moveToAnswer(chip) {
+  chip.classList.add('in-answer');
+  const area = document.getElementById('sentence-area');
+  const placeholder = document.getElementById('placeholder');
+  if (placeholder) placeholder.remove();
+  area.appendChild(chip);
+  chip.onclick = () => moveToBank(chip);
+}
+
+function moveToBank(chip) {
+  chip.classList.remove('in-answer');
+  document.getElementById('word-bank').appendChild(chip);
+  chip.onclick = () => moveToAnswer(chip);
+  const area = document.getElementById('sentence-area');
+  if (!area.querySelector('.chip')) {
+    const ph = document.createElement('span');
+    ph.className = 'placeholder'; ph.id = 'placeholder';
+    ph.textContent = 'Tap words to build the sentence';
+    area.appendChild(ph);
+  }
+}
+
+function check() {
+  const answer = [...document.querySelectorAll('#sentence-area .chip')].map(c => c.textContent);
+  if (!answer.length) return;
+  const area = document.getElementById('sentence-area');
+  const fb = document.getElementById('feedback');
+
+  if (JSON.stringify(answer) === JSON.stringify(current.words)) {
+    area.classList.add('correct');
+    fb.innerHTML = '<span class="correct-label">✓ Правильно!</span>';
+    if (current.note) {
+      const nb = document.createElement('div');
+      nb.className = 'note-box'; nb.style.display = 'block';
+      nb.textContent = '💡 ' + current.note;
+      fb.appendChild(nb);
+    }
+    if (!done.includes(current.idx)) {
+      done.push(current.idx);
+      localStorage.setItem(DATA_KEY, JSON.stringify(done));
+    }
+    updateProgressBar();
+    document.getElementById('btn-check').textContent = 'Далее →';
+    document.getElementById('btn-check').onclick = nextQuestion;
+    if (done.length === sentences.length) setTimeout(showFinish, 800);
+  } else {
+    area.classList.add('wrong');
+    fb.innerHTML = '<span class="wrong-label">✗ Неверно.</span><div class="answer">' + current.words.join(' ') + '</div>';
+  }
+}
+
+function skip() { nextQuestion(); }
+
+function nextQuestion() {
+  document.getElementById('btn-check').textContent = 'Check ✓';
+  document.getElementById('btn-check').onclick = check;
+  loadQuestion();
+}
+
+function showFinish() {
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = 'none';
+  document.getElementById('finish').classList.add('show');
+  document.getElementById('final-score').textContent = 'Все ' + sentences.length + ' предложений пройдено!';
+}
+
+function restart() {
+  document.getElementById('finish').classList.remove('show');
+  buildQueue();
+  loadQuestion();
+}
+
+function resetProgress() {
+  done = [];
+  localStorage.removeItem(DATA_KEY);
+  updateProgressBar();
+  restart();
+}
+
+function showRule() { document.getElementById('modal').classList.add('show'); }
+function hideRule() { document.getElementById('modal').classList.remove('show'); }
+
+buildQueue();
+loadQuestion();
+updateProgressBar();
+</script>
+
+<!-- ===== SOURCE DATA for gen_sentences_data.py (do not remove) ===== -->
+<script>
+// Source data for gen_sentences_data.py (do not remove this comment)
+const sentences = [
+  {words:["I","enjoy","swimming","in","the","sea"],ru:"Мне нравится плавать в море",verbForm:"gerund",keyVerb:"swimming",note:null},
+  {words:["She","doesn't","mind","waiting","for","a","few","minutes"],ru:"Она не против подождать несколько минут",verbForm:"gerund",keyVerb:"waiting",note:null},
+  {words:["He","avoids","eating","junk","food"],ru:"Он избегает есть вредную еду",verbForm:"gerund",keyVerb:"eating",note:null},
+  {words:["They","finished","painting","the","house"],ru:"Они закончили красить дом",verbForm:"gerund",keyVerb:"painting",note:null},
+  {words:["She","keeps","checking","her","phone"],ru:"Она постоянно проверяет телефон",verbForm:"gerund",keyVerb:"checking",note:null},
+  {words:["I","consider","moving","to","a","new","city"],ru:"Я думаю о переезде в новый город",verbForm:"gerund",keyVerb:"moving",note:null},
+  {words:["He","suggested","going","to","the","cinema"],ru:"Он предложил сходить в кино",verbForm:"gerund",keyVerb:"going",note:null},
+  {words:["She","risks","losing","her","job"],ru:"Она рискует потерять работу",verbForm:"gerund",keyVerb:"losing",note:null},
+  {words:["I","practise","speaking","English","every","day"],ru:"Я практикую разговорный английский каждый день",verbForm:"gerund",keyVerb:"speaking",note:null},
+  {words:["He","denied","taking","the","money"],ru:"Он отрицал, что взял деньги",verbForm:"gerund",keyVerb:"taking",note:null},
+  {words:["I","miss","living","near","the","beach"],ru:"Я скучаю по жизни у моря",verbForm:"gerund",keyVerb:"living",note:null},
+  {words:["Do","you","fancy","going","out","tonight?"],ru:"Хочешь выйти сегодня вечером?",verbForm:"gerund",keyVerb:"going",note:null},
+  {words:["He","can't","help","laughing","at","silly","jokes"],ru:"Он не может не смеяться над глупыми шутками",verbForm:"gerund",keyVerb:"laughing",note:null},
+  {words:["I","can't","stand","waiting","in","long","queues"],ru:"Я не выношу стоять в длинных очередях",verbForm:"gerund",keyVerb:"waiting",note:null},
+  {words:["It's","worth","trying","this","restaurant"],ru:"Стоит попробовать этот ресторан",verbForm:"gerund",keyVerb:"trying",note:null},
+  {words:["She","enjoys","reading","novels","before","bed"],ru:"Ей нравится читать романы перед сном",verbForm:"gerund",keyVerb:"reading",note:null},
+  {words:["They","avoided","making","eye","contact"],ru:"Они избегали зрительного контакта",verbForm:"gerund",keyVerb:"making",note:null},
+  {words:["He","finished","writing","the","report"],ru:"Он закончил писать отчёт",verbForm:"gerund",keyVerb:"writing",note:null},
+  {words:["She","keeps","interrupting","me"],ru:"Она постоянно меня перебивает",verbForm:"gerund",keyVerb:"interrupting",note:null},
+  {words:["I","don't","mind","helping","you"],ru:"Я не против помочь тебе",verbForm:"gerund",keyVerb:"helping",note:null},
+  {words:["He","considered","changing","his","career"],ru:"Он думал о смене карьеры",verbForm:"gerund",keyVerb:"changing",note:null},
+  {words:["She","suggested","taking","a","taxi"],ru:"Она предложила взять такси",verbForm:"gerund",keyVerb:"taking",note:null},
+  {words:["I","enjoy","cooking","Italian","food"],ru:"Мне нравится готовить итальянскую еду",verbForm:"gerund",keyVerb:"cooking",note:null},
+  {words:["They","keep","arguing","about","money"],ru:"Они постоянно спорят о деньгах",verbForm:"gerund",keyVerb:"arguing",note:null},
+  {words:["She","avoids","driving","at","night"],ru:"Она избегает вождения ночью",verbForm:"gerund",keyVerb:"driving",note:null},
+  {words:["He","denied","breaking","the","window"],ru:"Он отрицал, что разбил окно",verbForm:"gerund",keyVerb:"breaking",note:null},
+  {words:["I","miss","seeing","my","old","friends"],ru:"Я скучаю по встречам со старыми друзьями",verbForm:"gerund",keyVerb:"seeing",note:null},
+  {words:["It's","not","worth","complaining","about","it"],ru:"Не стоит на это жаловаться",verbForm:"gerund",keyVerb:"complaining",note:null},
+  {words:["She","enjoys","listening","to","jazz"],ru:"Ей нравится слушать джаз",verbForm:"gerund",keyVerb:"listening",note:null},
+  {words:["He","can't","stand","being","late"],ru:"Он терпеть не может опаздывать",verbForm:"gerund",keyVerb:"being",note:null},
+  {words:["I","finished","reading","the","book"],ru:"Я закончил читать книгу",verbForm:"gerund",keyVerb:"reading",note:null},
+  {words:["They","considered","selling","their","house"],ru:"Они думали о продаже дома",verbForm:"gerund",keyVerb:"selling",note:null},
+  {words:["She","practises","playing","the","piano","daily"],ru:"Она каждый день практикует игру на пианино",verbForm:"gerund",keyVerb:"playing",note:null},
+  {words:["He","avoids","meeting","his","ex"],ru:"Он избегает встреч со своей бывшей",verbForm:"gerund",keyVerb:"meeting",note:null},
+  {words:["I","can't","help","thinking","about","it"],ru:"Я не могу не думать об этом",verbForm:"gerund",keyVerb:"thinking",note:null},
+  {words:["Do","you","fancy","watching","a","film?"],ru:"Хочешь посмотреть фильм?",verbForm:"gerund",keyVerb:"watching",note:null},
+  {words:["She","keeps","losing","her","keys"],ru:"Она постоянно теряет ключи",verbForm:"gerund",keyVerb:"losing",note:null},
+  {words:["It's","worth","visiting","that","museum"],ru:"Стоит посетить тот музей",verbForm:"gerund",keyVerb:"visiting",note:null},
+  {words:["He","denied","sending","the","email"],ru:"Он отрицал, что отправил письмо",verbForm:"gerund",keyVerb:"sending",note:null},
+  {words:["I","miss","eating","my","mum's","cooking"],ru:"Я скучаю по маминой кухне",verbForm:"gerund",keyVerb:"eating",note:null},
+  {words:["They","enjoy","travelling","together"],ru:"Им нравится путешествовать вместе",verbForm:"gerund",keyVerb:"travelling",note:null},
+  {words:["She","suggested","meeting","at","the","café"],ru:"Она предложила встретиться в кафе",verbForm:"gerund",keyVerb:"meeting",note:null},
+  {words:["He","can't","stand","being","ignored"],ru:"Он терпеть не может, когда его игнорируют",verbForm:"gerund",keyVerb:"being",note:null},
+  {words:["I","consider","taking","an","online","course"],ru:"Я думаю записаться на онлайн-курс",verbForm:"gerund",keyVerb:"taking",note:null},
+  {words:["She","avoids","eating","sugar"],ru:"Она избегает употребления сахара",verbForm:"gerund",keyVerb:"eating",note:null},
+  {words:["He","finished","cleaning","the","apartment"],ru:"Он закончил убирать квартиру",verbForm:"gerund",keyVerb:"cleaning",note:null},
+  {words:["I","enjoy","hiking","in","the","mountains"],ru:"Мне нравится ходить в горы",verbForm:"gerund",keyVerb:"hiking",note:null},
+  {words:["They","keep","asking","the","same","question"],ru:"Они постоянно задают один и тот же вопрос",verbForm:"gerund",keyVerb:"asking",note:null},
+  {words:["She","risks","damaging","her","health"],ru:"Она рискует навредить своему здоровью",verbForm:"gerund",keyVerb:"damaging",note:null},
+  {words:["He","denied","ever","meeting","her"],ru:"Он отрицал, что когда-либо встречался с ней",verbForm:"gerund",keyVerb:"meeting",note:null},
+  {words:["I","can't","help","worrying","about","them"],ru:"Я не могу не беспокоиться о них",verbForm:"gerund",keyVerb:"worrying",note:null},
+  {words:["Do","you","fancy","trying","Thai","food?"],ru:"Хочешь попробовать тайскую кухню?",verbForm:"gerund",keyVerb:"trying",note:null},
+  {words:["She","enjoys","painting","watercolours"],ru:"Ей нравится рисовать акварелью",verbForm:"gerund",keyVerb:"painting",note:null},
+  {words:["He","avoids","talking","about","his","past"],ru:"Он избегает разговоров о своём прошлом",verbForm:"gerund",keyVerb:"talking",note:null},
+  {words:["It's","worth","checking","the","reviews","first"],ru:"Стоит сначала проверить отзывы",verbForm:"gerund",keyVerb:"checking",note:null},
+  {words:["They","finished","building","the","new","bridge"],ru:"Они закончили строить новый мост",verbForm:"gerund",keyVerb:"building",note:null},
+  {words:["I","miss","going","to","concerts"],ru:"Я скучаю по концертам",verbForm:"gerund",keyVerb:"going",note:null},
+  {words:["She","considers","becoming","a","teacher"],ru:"Она думает о том, чтобы стать учителем",verbForm:"gerund",keyVerb:"becoming",note:null},
+  {words:["He","keeps","forgetting","his","password"],ru:"Он постоянно забывает пароль",verbForm:"gerund",keyVerb:"forgetting",note:null},
+  {words:["I","enjoy","gardening","on","weekends"],ru:"Мне нравится заниматься садом по выходным",verbForm:"gerund",keyVerb:"gardening",note:null},
+  {words:["She","can't","stand","people","chewing","loudly"],ru:"Она терпеть не может, когда люди громко жуют",verbForm:"gerund",keyVerb:"chewing",note:null},
+  {words:["He","suggested","calling","the","manager"],ru:"Он предложил позвонить менеджеру",verbForm:"gerund",keyVerb:"calling",note:null},
+  {words:["They","avoid","using","plastic","bags"],ru:"Они стараются не использовать пластиковые пакеты",verbForm:"gerund",keyVerb:"using",note:null},
+  {words:["I","practise","drawing","every","evening"],ru:"Я тренируюсь в рисовании каждый вечер",verbForm:"gerund",keyVerb:"drawing",note:null},
+  {words:["She","risks","offending","people"],ru:"Она рискует обидеть людей",verbForm:"gerund",keyVerb:"offending",note:null},
+  {words:["He","finished","editing","the","video"],ru:"Он закончил монтировать видео",verbForm:"gerund",keyVerb:"editing",note:null},
+  {words:["Do","you","fancy","going","for","a","walk?"],ru:"Хочешь пойти на прогулку?",verbForm:"gerund",keyVerb:"going",note:null},
+  {words:["I","can't","help","smiling","when","I","see","her"],ru:"Я не могу не улыбаться, когда вижу её",verbForm:"gerund",keyVerb:"smiling",note:null},
+  {words:["They","enjoy","playing","board","games"],ru:"Им нравится играть в настольные игры",verbForm:"gerund",keyVerb:"playing",note:null},
+  {words:["She","keeps","making","the","same","mistake"],ru:"Она постоянно совершает одну и ту же ошибку",verbForm:"gerund",keyVerb:"making",note:null},
+  {words:["He","avoids","working","overtime"],ru:"Он старается не работать сверхурочно",verbForm:"gerund",keyVerb:"working",note:null},
+  {words:["It's","worth","learning","a","new","language"],ru:"Стоит выучить новый язык",verbForm:"gerund",keyVerb:"learning",note:null},
+  {words:["She","enjoys","singing","in","the","shower"],ru:"Ей нравится петь в душе",verbForm:"gerund",keyVerb:"singing",note:null},
+  {words:["I","miss","working","with","my","old","team"],ru:"Я скучаю по работе со своей старой командой",verbForm:"gerund",keyVerb:"working",note:null},
+  {words:["He","considered","accepting","the","offer"],ru:"Он рассматривал принятие предложения",verbForm:"gerund",keyVerb:"accepting",note:null},
+  {words:["They","can't","stand","waiting","in","traffic"],ru:"Они терпеть не могут стоять в пробках",verbForm:"gerund",keyVerb:"waiting",note:null},
+  {words:["She","practises","speaking","French","with","native","speakers"],ru:"Она практикует французский с носителями языка",verbForm:"gerund",keyVerb:"speaking",note:null},
+  {words:["He","denied","spreading","the","rumour"],ru:"Он отрицал, что распускал слухи",verbForm:"gerund",keyVerb:"spreading",note:null},
+  {words:["I","enjoy","watching","documentaries"],ru:"Мне нравится смотреть документальные фильмы",verbForm:"gerund",keyVerb:"watching",note:null},
+  {words:["She","suggested","booking","tickets","in","advance"],ru:"Она предложила купить билеты заранее",verbForm:"gerund",keyVerb:"booking",note:null},
+  {words:["He","can't","help","being","sarcastic"],ru:"Он не может удержаться от сарказма",verbForm:"gerund",keyVerb:"being",note:null},
+  {words:["It's","not","worth","getting","upset","about","it"],ru:"Не стоит расстраиваться из-за этого",verbForm:"gerund",keyVerb:"getting",note:null},
+  {words:["They","keep","interrupting","the","speaker"],ru:"Они постоянно перебивают докладчика",verbForm:"gerund",keyVerb:"interrupting",note:null},
+  {words:["I","finished","organising","the","files"],ru:"Я закончил организовывать файлы",verbForm:"gerund",keyVerb:"organising",note:null},
+  {words:["She","avoids","shopping","during","peak","hours"],ru:"Она избегает покупок в часы пик",verbForm:"gerund",keyVerb:"shopping",note:null},
+  {words:["He","risks","getting","fired"],ru:"Он рискует быть уволенным",verbForm:"gerund",keyVerb:"getting",note:null},
+  {words:["I","miss","having","long","lunches","with","colleagues"],ru:"Я скучаю по долгим обедам с коллегами",verbForm:"gerund",keyVerb:"having",note:null},
+  {words:["Do","you","fancy","trying","rock","climbing?"],ru:"Хочешь попробовать скалолазание?",verbForm:"gerund",keyVerb:"trying",note:null},
+  {words:["She","considers","studying","abroad"],ru:"Она думает об учёбе за рубежом",verbForm:"gerund",keyVerb:"studying",note:null},
+  {words:["He","enjoys","cycling","to","work"],ru:"Ему нравится ездить на работу на велосипеде",verbForm:"gerund",keyVerb:"cycling",note:null},
+  {words:["They","avoid","discussing","politics","at","dinner"],ru:"Они избегают обсуждения политики за ужином",verbForm:"gerund",keyVerb:"discussing",note:null},
+  {words:["I","can't","stand","receiving","spam","emails"],ru:"Я терпеть не могу получать спам",verbForm:"gerund",keyVerb:"receiving",note:null},
+  {words:["She","keeps","humming","the","same","tune"],ru:"Она постоянно напевает один и тот же мотив",verbForm:"gerund",keyVerb:"humming",note:null},
+  {words:["He","denied","knowing","about","the","plan"],ru:"Он отрицал, что знал о плане",verbForm:"gerund",keyVerb:"knowing",note:null},
+  {words:["It's","worth","spending","time","on","your","health"],ru:"Стоит уделять время своему здоровью",verbForm:"gerund",keyVerb:"spending",note:null},
+  {words:["I","enjoy","running","in","the","park","in","the","morning"],ru:"Мне нравится бегать в парке по утрам",verbForm:"gerund",keyVerb:"running",note:null},
+  {words:["She","suggested","postponing","the","meeting"],ru:"Она предложила перенести встречу",verbForm:"gerund",keyVerb:"postponing",note:null},
+  {words:["He","can't","help","laughing","at","his","own","jokes"],ru:"Он не может не смеяться над своими же шутками",verbForm:"gerund",keyVerb:"laughing",note:null},
+  {words:["They","finished","installing","the","new","software"],ru:"Они закончили устанавливать новое программное обеспечение",verbForm:"gerund",keyVerb:"installing",note:null},
+  {words:["I","miss","taking","long","walks","on","the","beach"],ru:"Я скучаю по долгим прогулкам по пляжу",verbForm:"gerund",keyVerb:"taking",note:null},
+];
+</script>
+</body>
+</html>

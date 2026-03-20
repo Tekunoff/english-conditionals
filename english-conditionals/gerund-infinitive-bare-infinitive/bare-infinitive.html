@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Bare Infinitive</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f0f14; color: #f0f0f0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 14px 16px 40px; }
+    .top-bar { width: 100%; max-width: 480px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .top-bar h1 { font-size: 15px; color: #666; text-transform: uppercase; letter-spacing: 1.5px; text-align: center; }
+    .btn-back { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 8px 14px; font-size: 15px; cursor: pointer; text-decoration: none; line-height: 1; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .btn-rule { background: none; border: 1.5px solid #3d3d5c; color: #9d9dff; border-radius: 20px; padding: 8px 14px; font-size: 15px; cursor: pointer; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .progress-bar-wrap { width: 100%; max-width: 480px; background: #1e1e2a; border-radius: 6px; height: 6px; margin-bottom: 6px; }
+    .progress-bar { height: 6px; background: #7b68ee; border-radius: 6px; transition: width 0.4s ease; }
+    .progress-info { width: 100%; max-width: 480px; font-size: 14px; color: #555; margin-bottom: 14px; }
+    .task-card { width: 100%; max-width: 480px; background: #1a1a2e; border: 1.5px solid #2e2e50; border-radius: 14px; padding: 18px 20px; margin-bottom: 14px; }
+    .task-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .task-ru { font-size: 22px; color: #e0e0ff; line-height: 1.5; font-weight: 500; }
+    .form-choices { width: 100%; max-width: 480px; display: flex; gap: 10px; margin-bottom: 16px; }
+    .form-btn { flex: 1; padding: 18px 8px; font-size: 18px; font-weight: 700; border: 1.5px solid #3d3d5c; border-radius: 14px; background: #1a1a2e; color: #d0d0f0; cursor: pointer; transition: background 0.15s, border-color 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .form-btn:active { transform: scale(0.97); }
+    .form-btn.correct { border-color: #4caf82; background: #1a2e22; color: #4caf82; }
+    .form-btn.wrong   { border-color: #e05c5c; background: #2e1a1a; color: #e05c5c; }
+    .sentence-area { width: 100%; max-width: 480px; min-height: 70px; background: #1a1a24; border: 2px solid #2e2e44; border-radius: 14px; padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; transition: border-color 0.3s; }
+    .sentence-area.correct { border-color: #4caf82; }
+    .sentence-area.wrong   { border-color: #e05c5c; }
+    .placeholder { color: #444; font-size: 16px; font-style: italic; }
+    .chip { background: #2a2a3e; border: 1.5px solid #3d3d5c; color: #d0d0f0; border-radius: 22px; padding: 11px 18px; font-size: 19px; cursor: pointer; user-select: none; transition: background 0.15s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    .chip:active { transform: scale(0.95); }
+    .chip.in-answer { background: #35355a; border-color: #7b68ee; color: #c8c8ff; }
+    .bank-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; align-self: flex-start; max-width: 480px; width: 100%; }
+    .word-bank { width: 100%; max-width: 480px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; min-height: 50px; }
+    .btn-row { display: flex; gap: 12px; width: 100%; max-width: 480px; }
+    button { border: none; border-radius: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; }
+    button:active { transform: scale(0.97); }
+    .btn-row button { flex: 1; padding: 20px; font-size: 20px; }
+    #btn-check { background: #7b68ee; color: #fff; }
+    #btn-skip  { background: #1e1e2a; color: #777; border: 1.5px solid #2e2e44; flex: 0 0 auto; padding: 20px 24px; }
+    .feedback { margin-top: 14px; width: 100%; max-width: 480px; font-size: 17px; line-height: 1.6; min-height: 50px; }
+    .feedback .correct-label { color: #4caf82; font-weight: 700; }
+    .feedback .wrong-label   { color: #e05c5c; font-weight: 700; }
+    .feedback .answer        { color: #9d9dff; margin-top: 4px; }
+    .note-box { margin-top: 10px; background: #1e1e3a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; font-size: 14px; color: #c8c8ff; display: none; }
+    .finish { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-top: 40px; }
+    .finish.show { display: flex; }
+    .finish h2 { font-size: 30px; color: #7b68ee; }
+    .finish button { max-width: 260px; background: #7b68ee; color: #fff; font-size: 18px; padding: 18px; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #1a1a2e; border: 1.5px solid #3d3d5c; border-radius: 18px; padding: 24px 22px; max-width: 460px; width: 100%; max-height: 85vh; overflow-y: auto; }
+    .modal h2 { font-size: 18px; color: #9d9dff; margin-bottom: 16px; }
+    .modal p { font-size: 14px; color: #aaa; line-height: 1.7; margin-bottom: 10px; }
+    .modal .example { background: #12122a; border-left: 3px solid #7b68ee; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; color: #d0d0f0; line-height: 1.6; }
+    .modal-close { margin-top: 20px; width: 100%; background: #7b68ee; color: #fff; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html" class="btn-back">‹ Назад</a>
+  <h1>Bare Infinitive</h1>
+  <button class="btn-rule" onclick="showRule()">📖 Правило</button>
+</div>
+<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+<div class="progress-info" id="progress-info">загрузка…</div>
+
+<div id="step1">
+  <div class="task-card">
+    <div class="task-label">Какая форма глагола?</div>
+    <div class="task-ru" id="task-ru">…</div>
+  </div>
+  <div class="form-choices">
+    <button class="form-btn" data-form="gerund"     onclick="chooseForm('gerund')">doing</button>
+    <button class="form-btn" data-form="infinitive" onclick="chooseForm('infinitive')">to do</button>
+    <button class="form-btn" data-form="bare"       onclick="chooseForm('bare')">do</button>
+  </div>
+</div>
+
+<div id="step2" style="display:none">
+  <div id="game">
+    <div class="task-card">
+      <div class="task-label">Переведи на английский</div>
+      <div class="task-ru" id="task-ru-2">…</div>
+    </div>
+    <div class="sentence-area" id="sentence-area">
+      <span class="placeholder" id="placeholder">Tap words to build the sentence</span>
+    </div>
+    <div class="bank-label">Слова</div>
+    <div class="word-bank" id="word-bank"></div>
+    <div class="btn-row">
+      <button id="btn-skip"  onclick="skip()">Skip</button>
+      <button id="btn-check" onclick="check()">Check ✓</button>
+    </div>
+    <div class="feedback" id="feedback"><div class="note-box" id="note-box"></div></div>
+  </div>
+</div>
+
+<div class="finish" id="finish">
+  <h2>🎉 Готово!</h2>
+  <p id="final-score"></p>
+  <button onclick="restart()">Продолжить</button>
+  <button onclick="resetProgress()" style="background:#1e1e2a;color:#777;border:1.5px solid #2e2e44;margin-top:4px;">Сначала</button>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Bare Infinitive — Правило</h2>
+    <p>После глаголов восприятия и каузативных конструкций часто нужен <strong style="color:#c8c8ff">bare infinitive</strong> (без <em>to</em>):</p>
+    <div class="example">make, let, have, help, see, hear, feel, watch, notice + do</div>
+    <div class="example">She made me <em style="color:#9d9dff">apologise</em>. I heard him <em style="color:#9d9dff">leave</em>.</div>
+    <button class="modal-close" onclick="hideRule()">Понятно ✓</button>
+  </div>
+</div>
+
+<script src="sentences-data.js"></script>
+<script>
+const DATA_KEY = 'bareInfinitive';
+const sentences = window.sentencesData[DATA_KEY];
+let done = JSON.parse(localStorage.getItem(DATA_KEY) || '[]');
+let queue = [], current = null, formChosen = false;
+function buildQueue() { const all = sentences.map((_,i)=>i); const notDone = all.filter(i=>!done.includes(i)); queue = notDone.length ? shuffle([...notDone]) : shuffle([...all]); }
+function shuffle(arr) { for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+function updateProgressBar() { const pct=sentences.length?Math.round(done.length/sentences.length*100):0; document.getElementById('progress-bar').style.width=pct+'%'; document.getElementById('progress-info').textContent=done.length+' / '+sentences.length+' изучено'; }
+function loadQuestion() { if(!queue.length)buildQueue(); const idx=queue.shift(); current={...sentences[idx],idx}; formChosen=false; document.getElementById('step1').style.display=''; document.getElementById('step2').style.display='none'; document.querySelectorAll('.form-btn').forEach(btn=>{btn.classList.remove('correct','wrong');btn.disabled=false;}); document.getElementById('task-ru').textContent=current.ru; }
+function chooseForm(form) { if(formChosen)return; const btns=document.querySelectorAll('.form-btn'); btns.forEach(btn=>btn.disabled=true); if(form===current.verbForm){formChosen=true;btns.forEach(btn=>{if(btn.dataset.form===form)btn.classList.add('correct');});setTimeout(goToStep2,600);}else{btns.forEach(btn=>{if(btn.dataset.form===form)btn.classList.add('wrong');if(btn.dataset.form===current.verbForm){btn.classList.add('correct');btn.disabled=false;}});} }
+function goToStep2() { document.getElementById('step1').style.display='none'; document.getElementById('step2').style.display=''; document.getElementById('task-ru-2').textContent=current.ru; document.getElementById('feedback').innerHTML='<div class="note-box" id="note-box"></div>'; document.getElementById('sentence-area').className='sentence-area'; document.getElementById('sentence-area').innerHTML='<span class="placeholder" id="placeholder">Tap words to build the sentence</span>'; renderBank(shuffle([...current.words])); document.getElementById('btn-check').textContent='Check ✓'; document.getElementById('btn-check').onclick=check; }
+function renderBank(words) { const bank=document.getElementById('word-bank'); bank.innerHTML=''; words.forEach(word=>{const chip=document.createElement('button');chip.className='chip';chip.textContent=word;chip.onclick=()=>moveToAnswer(chip);bank.appendChild(chip);}); }
+function moveToAnswer(chip) { chip.classList.add('in-answer'); const area=document.getElementById('sentence-area'); const ph=document.getElementById('placeholder'); if(ph)ph.remove(); area.appendChild(chip); chip.onclick=()=>moveToBank(chip); }
+function moveToBank(chip) { chip.classList.remove('in-answer'); document.getElementById('word-bank').appendChild(chip); chip.onclick=()=>moveToAnswer(chip); const area=document.getElementById('sentence-area'); if(!area.querySelector('.chip')){const ph=document.createElement('span');ph.className='placeholder';ph.id='placeholder';ph.textContent='Tap words to build the sentence';area.appendChild(ph);} }
+function check() { const answer=[...document.querySelectorAll('#sentence-area .chip')].map(c=>c.textContent); if(!answer.length)return; const area=document.getElementById('sentence-area'); const fb=document.getElementById('feedback'); if(JSON.stringify(answer)===JSON.stringify(current.words)){area.classList.add('correct');fb.innerHTML='<span class="correct-label">✓ Правильно!</span>';if(current.note){const nb=document.createElement('div');nb.className='note-box';nb.style.display='block';nb.textContent='💡 '+current.note;fb.appendChild(nb);}if(!done.includes(current.idx)){done.push(current.idx);localStorage.setItem(DATA_KEY,JSON.stringify(done));}updateProgressBar();document.getElementById('btn-check').textContent='Далее →';document.getElementById('btn-check').onclick=nextQuestion;if(done.length===sentences.length)setTimeout(showFinish,800);}else{area.classList.add('wrong');fb.innerHTML='<span class="wrong-label">✗ Неверно.</span><div class="answer">'+current.words.join(' ')+'</div>';} }
+function skip() { nextQuestion(); }
+function nextQuestion() { document.getElementById('btn-check').textContent='Check ✓'; document.getElementById('btn-check').onclick=check; loadQuestion(); }
+function showFinish() { document.getElementById('step1').style.display='none'; document.getElementById('step2').style.display='none'; document.getElementById('finish').classList.add('show'); document.getElementById('final-score').textContent='Все '+sentences.length+' предложений пройдено!'; }
+function restart() { document.getElementById('finish').classList.remove('show'); buildQueue(); loadQuestion(); }
+function resetProgress() { done=[]; localStorage.removeItem(DATA_KEY); updateProgressBar(); restart(); }
+function showRule() { document.getElementById('modal').classList.add('show'); }
+function hideRule() { document.getElementById('modal').classList.remove('show'); }
+buildQueue(); loadQuestion(); updateProgressBar();
+</script>
+
+<!-- ===== SOURCE DATA for gen_sentences_data.py (do not remove) ===== -->
+<script>
+// Source data for gen_sentences_data.py (do not remove this comment)
+const sentences = [
+  {words:["She","made","him","apologise"],ru:"Она заставила его извиниться",verbForm:"bare",keyVerb:"apologise",note:null},
+  {words:["Let","me","help","you","with","that"],ru:"Позволь мне помочь тебе с этим",verbForm:"bare",keyVerb:"help",note:null},
+  {words:["I'll","have","the","technician","fix","it"],ru:"Я попрошу техника починить это",verbForm:"bare",keyVerb:"fix",note:null},
+  {words:["She","heard","him","leave","the","room"],ru:"Она слышала, как он вышел из комнаты",verbForm:"bare",keyVerb:"leave",note:null},
+  {words:["We","watched","the","children","play","in","the","park"],ru:"Мы наблюдали, как дети играют в парке",verbForm:"bare",keyVerb:"play",note:null},
+  {words:["He","felt","his","heart","beat","faster"],ru:"Он почувствовал, как его сердце забилось быстрее",verbForm:"bare",keyVerb:"beat",note:null},
+  {words:["Can","you","help","me","carry","these","bags?"],ru:"Ты можешь помочь мне донести эти пакеты?",verbForm:"bare",keyVerb:"carry",note:null},
+  {words:["She","saw","him","cross","the","street"],ru:"Она видела, как он переходил улицу",verbForm:"bare",keyVerb:"cross",note:null},
+  {words:["Don't","let","fear","stop","you"],ru:"Не позволяй страху останавливать тебя",verbForm:"bare",keyVerb:"stop",note:null},
+  {words:["They","made","the","students","rewrite","the","essay"],ru:"Они заставили студентов переписать эссе",verbForm:"bare",keyVerb:"rewrite",note:null},
+  {words:["I","noticed","her","smile","when","she","read","it"],ru:"Я заметил, как она улыбнулась, когда прочла это",verbForm:"bare",keyVerb:"smile",note:null},
+  {words:["He","let","the","dog","run","in","the","garden"],ru:"Он позволил собаке бегать в саду",verbForm:"bare",keyVerb:"run",note:null},
+  {words:["We","watched","him","perform","on","stage"],ru:"Мы смотрели, как он выступает на сцене",verbForm:"bare",keyVerb:"perform",note:null},
+  {words:["She","made","me","feel","welcome"],ru:"Она дала мне почувствовать себя желанным гостем",verbForm:"bare",keyVerb:"feel",note:null},
+  {words:["I","heard","someone","knock","at","the","door"],ru:"Я слышал, как кто-то постучал в дверь",verbForm:"bare",keyVerb:"knock",note:null},
+  {words:["They","let","us","skip","the","queue"],ru:"Они позволили нам пройти без очереди",verbForm:"bare",keyVerb:"skip",note:null},
+  {words:["He","watched","the","sun","set","over","the","mountains"],ru:"Он наблюдал, как солнце садилось за горы",verbForm:"bare",keyVerb:"set",note:null},
+  {words:["I'll","have","the","assistant","prepare","the","report"],ru:"Я попрошу ассистента подготовить доклад",verbForm:"bare",keyVerb:"prepare",note:null},
+  {words:["She","saw","the","thief","steal","the","bag"],ru:"Она видела, как вор украл сумку",verbForm:"bare",keyVerb:"steal",note:null},
+  {words:["Can","you","help","me","move","the","furniture?"],ru:"Можешь помочь мне передвинуть мебель?",verbForm:"bare",keyVerb:"move",note:null},
+  {words:["He","made","her","cry"],ru:"Он довёл её до слёз",verbForm:"bare",keyVerb:"cry",note:null},
+  {words:["The","teacher","let","the","class","go","early"],ru:"Учитель отпустил класс раньше",verbForm:"bare",keyVerb:"go",note:null},
+  {words:["I","felt","the","ground","shake"],ru:"Я почувствовал, как земля затряслась",verbForm:"bare",keyVerb:"shake",note:null},
+  {words:["She","heard","her","neighbours","argue","last","night"],ru:"Она слышала, как её соседи ссорились прошлой ночью",verbForm:"bare",keyVerb:"argue",note:null},
+  {words:["They","watched","the","fireworks","explode","in","the","sky"],ru:"Они смотрели, как фейерверки взрывались в небе",verbForm:"bare",keyVerb:"explode",note:null},
+  {words:["He","noticed","someone","follow","him"],ru:"Он заметил, что кто-то следует за ним",verbForm:"bare",keyVerb:"follow",note:null},
+  {words:["I'll","have","the","cleaner","wash","the","windows"],ru:"Я попрошу уборщика помыть окна",verbForm:"bare",keyVerb:"wash",note:null},
+  {words:["Let","her","speak","her","mind"],ru:"Позволь ей высказаться",verbForm:"bare",keyVerb:"speak",note:null},
+  {words:["The","boss","made","everyone","stay","late"],ru:"Начальник заставил всех остаться допоздна",verbForm:"bare",keyVerb:"stay",note:null},
+  {words:["I","watched","him","paint","the","whole","wall"],ru:"Я наблюдал, как он красил всю стену",verbForm:"bare",keyVerb:"paint",note:null},
+  {words:["She","saw","the","car","crash"],ru:"Она видела аварию",verbForm:"bare",keyVerb:"crash",note:null},
+  {words:["Can","you","help","me","find","my","phone?"],ru:"Можешь помочь мне найти телефон?",verbForm:"bare",keyVerb:"find",note:null},
+  {words:["He","felt","someone","touch","his","shoulder"],ru:"Он почувствовал, как кто-то коснулся его плеча",verbForm:"bare",keyVerb:"touch",note:null},
+  {words:["They","made","him","stand","in","the","corner"],ru:"Они заставили его стоять в углу",verbForm:"bare",keyVerb:"stand",note:null},
+  {words:["She","let","her","son","stay","up","late"],ru:"Она позволила сыну не ложиться спать допоздна",verbForm:"bare",keyVerb:"stay",note:null},
+  {words:["I","observed","him","solve","the","problem"],ru:"Я наблюдал, как он решал проблему",verbForm:"bare",keyVerb:"solve",note:null},
+  {words:["He","heard","the","bell","ring"],ru:"Он услышал звонок",verbForm:"bare",keyVerb:"ring",note:null},
+  {words:["I'll","have","my","brother","look","at","it"],ru:"Я попрошу брата взглянуть на это",verbForm:"bare",keyVerb:"look",note:null},
+  {words:["She","watched","the","ice","melt"],ru:"Она наблюдала, как таял лёд",verbForm:"bare",keyVerb:"melt",note:null},
+  {words:["They","let","the","passengers","board","first"],ru:"Они позволили пассажирам сесть первыми",verbForm:"bare",keyVerb:"board",note:null},
+  {words:["He","made","the","suspect","confess"],ru:"Он заставил подозреваемого признаться",verbForm:"bare",keyVerb:"confess",note:null},
+  {words:["I","noticed","the","light","flicker"],ru:"Я заметил, как мигнул свет",verbForm:"bare",keyVerb:"flicker",note:null},
+  {words:["She","saw","him","fall","off","the","bike"],ru:"Она видела, как он упал с велосипеда",verbForm:"bare",keyVerb:"fall",note:null},
+  {words:["Can","you","help","me","set","up","the","table?"],ru:"Можешь помочь мне накрыть на стол?",verbForm:"bare",keyVerb:"set",note:null},
+  {words:["They","watched","the","match","unfold"],ru:"Они смотрели, как разворачивался матч",verbForm:"bare",keyVerb:"unfold",note:null},
+  {words:["He","let","his","mind","wander"],ru:"Он позволил мыслям блуждать",verbForm:"bare",keyVerb:"wander",note:null},
+  {words:["I","felt","a","cold","draft","come","through","the","window"],ru:"Я почувствовал, как в окно задул холодный сквозняк",verbForm:"bare",keyVerb:"come",note:null},
+  {words:["She","made","him","repeat","the","instructions"],ru:"Она заставила его повторить инструкцию",verbForm:"bare",keyVerb:"repeat",note:null},
+  {words:["I'll","have","the","plumber","check","the","pipes"],ru:"Я попрошу сантехника проверить трубы",verbForm:"bare",keyVerb:"check",note:null},
+  {words:["He","watched","the","crowd","gather","in","the","square"],ru:"Он наблюдал, как толпа собирается на площади",verbForm:"bare",keyVerb:"gather",note:null},
+  {words:["Let","things","take","their","natural","course"],ru:"Позволь событиям идти своим чередом",verbForm:"bare",keyVerb:"take",note:null},
+  {words:["She","heard","him","whisper","her","name"],ru:"Она слышала, как он прошептал её имя",verbForm:"bare",keyVerb:"whisper",note:null},
+  {words:["They","noticed","the","temperature","drop"],ru:"Они заметили, как упала температура",verbForm:"bare",keyVerb:"drop",note:null},
+  {words:["He","made","me","apologise","in","front","of","everyone"],ru:"Он заставил меня извиниться перед всеми",verbForm:"bare",keyVerb:"apologise",note:null},
+  {words:["I","watched","the","technician","repair","the","machine"],ru:"Я наблюдал, как техник ремонтировал машину",verbForm:"bare",keyVerb:"repair",note:null},
+  {words:["She","let","the","cat","sleep","on","her","bed"],ru:"Она позволила кошке спать на её кровати",verbForm:"bare",keyVerb:"sleep",note:null},
+  {words:["Can","you","help","me","fix","this","error?"],ru:"Можешь помочь мне исправить эту ошибку?",verbForm:"bare",keyVerb:"fix",note:null},
+  {words:["I","felt","his","presence","fill","the","room"],ru:"Я почувствовал, как его присутствие заполнило комнату",verbForm:"bare",keyVerb:"fill",note:null},
+  {words:["He","saw","her","wave","from","the","window"],ru:"Он видел, как она махала из окна",verbForm:"bare",keyVerb:"wave",note:null},
+  {words:["They","made","the","children","clean","up","after","themselves"],ru:"Они заставили детей убрать за собой",verbForm:"bare",keyVerb:"clean",note:null},
+  {words:["I'll","have","someone","look","into","it"],ru:"Я попрошу кого-нибудь разобраться с этим",verbForm:"bare",keyVerb:"look",note:null},
+  {words:["She","noticed","him","sneeze","and","offered","a","tissue"],ru:"Она заметила, что он чихнул, и предложила салфетку",verbForm:"bare",keyVerb:"sneeze",note:null},
+  {words:["He","watched","the","plane","take","off"],ru:"Он наблюдал, как самолёт взлетал",verbForm:"bare",keyVerb:"take",note:null},
+  {words:["Let","the","music","speak","for","itself"],ru:"Пусть музыка говорит сама за себя",verbForm:"bare",keyVerb:"speak",note:null},
+  {words:["She","heard","the","engine","start"],ru:"Она услышала, как запустился двигатель",verbForm:"bare",keyVerb:"start",note:null},
+  {words:["I","made","myself","exercise","every","day"],ru:"Я заставлял себя заниматься каждый день",verbForm:"bare",keyVerb:"exercise",note:null},
+  {words:["They","let","us","choose","our","own","seats"],ru:"Они позволили нам самим выбрать места",verbForm:"bare",keyVerb:"choose",note:null},
+  {words:["Can","you","help","me","write","this","email?"],ru:"Можешь помочь мне написать это письмо?",verbForm:"bare",keyVerb:"write",note:null},
+  {words:["He","saw","the","lightning","strike","the","tree"],ru:"Он видел, как молния ударила в дерево",verbForm:"bare",keyVerb:"strike",note:null},
+  {words:["I","observed","him","interact","with","the","clients"],ru:"Я наблюдал, как он взаимодействовал с клиентами",verbForm:"bare",keyVerb:"interact",note:null},
+  {words:["She","made","him","promise","to","be","careful"],ru:"Она заставила его пообещать быть осторожным",verbForm:"bare",keyVerb:"promise",note:null},
+  {words:["They","watched","the","river","flood","the","bridge"],ru:"Они наблюдали, как река затопила мост",verbForm:"bare",keyVerb:"flood",note:null},
+  {words:["I'll","have","him","explain","everything"],ru:"Я попрошу его всё объяснить",verbForm:"bare",keyVerb:"explain",note:null},
+  {words:["He","let","me","borrow","his","car"],ru:"Он позволил мне одолжить его машину",verbForm:"bare",keyVerb:"borrow",note:null},
+  {words:["She","felt","the","tension","rise","in","the","room"],ru:"Она почувствовала, как в комнате нарастает напряжение",verbForm:"bare",keyVerb:"rise",note:null},
+  {words:["I","noticed","her","hesitate","before","answering"],ru:"Я заметил, что она замешкалась перед ответом",verbForm:"bare",keyVerb:"hesitate",note:null},
+  {words:["He","made","me","realise","how","wrong","I","was"],ru:"Он заставил меня понять, насколько я был неправ",verbForm:"bare",keyVerb:"realise",note:null},
+  {words:["She","saw","him","trip","on","the","stairs"],ru:"Она видела, как он споткнулся на лестнице",verbForm:"bare",keyVerb:"trip",note:null},
+  {words:["They","let","the","idea","sink","in"],ru:"Они дали идее осесть",verbForm:"bare",keyVerb:"sink",note:null},
+  {words:["Can","you","help","me","translate","this","sentence?"],ru:"Можешь помочь мне перевести это предложение?",verbForm:"bare",keyVerb:"translate",note:null},
+  {words:["I","heard","the","alarm","go","off","at","six"],ru:"Я услышал, как в шесть сработал будильник",verbForm:"bare",keyVerb:"go",note:null},
+  {words:["He","watched","his","investment","grow","over","the","years"],ru:"Он наблюдал, как его вложения росли с годами",verbForm:"bare",keyVerb:"grow",note:null},
+  {words:["I'll","have","the","gardener","trim","the","hedge"],ru:"Я попрошу садовника подстричь живую изгородь",verbForm:"bare",keyVerb:"trim",note:null},
+  {words:["She","made","everyone","laugh","with","her","story"],ru:"Она заставила всех смеяться своей историей",verbForm:"bare",keyVerb:"laugh",note:null},
+  {words:["He","noticed","the","paint","peel","from","the","wall"],ru:"Он заметил, как краска облезает со стены",verbForm:"bare",keyVerb:"peel",note:null},
+  {words:["Let","him","decide","for","himself"],ru:"Позволь ему решить самому",verbForm:"bare",keyVerb:"decide",note:null},
+  {words:["I","felt","a","weight","lift","off","my","shoulders"],ru:"Я почувствовал, как груз свалился с плеч",verbForm:"bare",keyVerb:"lift",note:null},
+  {words:["She","heard","a","child","cry","outside"],ru:"Она услышала, как снаружи плачет ребёнок",verbForm:"bare",keyVerb:"cry",note:null},
+  {words:["They","saw","the","satellite","pass","overhead"],ru:"Они видели, как спутник пролетел над ними",verbForm:"bare",keyVerb:"pass",note:null},
+  {words:["He","made","the","team","work","through","the","weekend"],ru:"Он заставил команду работать все выходные",verbForm:"bare",keyVerb:"work",note:null},
+  {words:["I","observed","the","change","happen","gradually"],ru:"Я наблюдал, как постепенно происходили изменения",verbForm:"bare",keyVerb:"happen",note:null},
+  {words:["Can","you","help","me","open","this","jar?"],ru:"Можешь помочь мне открыть эту банку?",verbForm:"bare",keyVerb:"open",note:null},
+  {words:["She","let","the","news","sink","in","before","responding"],ru:"Она дала новостям осесть, прежде чем ответить",verbForm:"bare",keyVerb:"sink",note:null},
+  {words:["He","watched","the","dough","rise","in","the","bowl"],ru:"Он наблюдал, как тесто поднималось в миске",verbForm:"bare",keyVerb:"rise",note:null},
+  {words:["I'll","have","the","lawyer","review","the","contract"],ru:"Я попрошу юриста изучить контракт",verbForm:"bare",keyVerb:"review",note:null},
+];
+</script>
+</body>
+</html>
